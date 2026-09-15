@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@theme {
+  --color-primary: #b93823;
+  --color-accent: #f8c451;
+  --color-ink: #30251f;
+  --color-ink-soft: #65564c;
+  --color-muted: #77685c;
+  --color-surface: #fffdf8;
+  --color-bg: #f7f2e8;
+  --color-border: #ded4c4;
+  --color-success: #24734f;
+  --color-danger: #b12b35;
+  --color-warning: #9c640c;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+@layer base {
+  body { @apply bg-bg text-ink font-sans; }
+  button, a, input, select { -webkit-tap-highlight-color: transparent; }
+  button { @apply cursor-pointer disabled:cursor-not-allowed disabled:opacity-50; }
+  input:not([type=checkbox]), select { @apply w-full rounded-xl border border-border bg-surface px-3 py-3; }
+  input[type=checkbox] { @apply h-5 w-5 accent-primary; }
+  :focus-visible { @apply outline-2 outline-offset-4 outline-primary; }
+  h1 { @apply text-3xl font-bold tracking-tight; }
+  h2 { @apply text-xl font-bold; }
+  label { @apply text-sm font-medium; }
+}
+@layer components {
+  .btn { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white; }
+  .btn-secondary { @apply inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold; }
+  .panel { @apply rounded-2xl border border-border bg-surface p-5; }
+  .badge { @apply inline-flex rounded-full bg-bg px-3 py-1 text-xs font-semibold; }
+}

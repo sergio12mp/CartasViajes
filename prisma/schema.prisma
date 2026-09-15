@@ -1,11 +1,216 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
-  provider = "postgresql"
-  url = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
 model User {
-  id String @id @default(cuid())
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  trips         Trip[]
+  players       TripPlayer[]
+  createdAt     DateTime     @default(now())
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum TripStatus {
+  DRAFT
+  ACTIVE
+  FINISHED
+}
+
+enum CardKind {
+  ATTACK
+  REACTION
+}
+
+enum ReactionEffect {
+  BLOCK
+  REFLECT
+}
+
+enum CardStatus {
+  AVAILABLE
+  LOCKED
+}
+
+enum PlayStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+  REFLECTED
+}
+
+enum EventType {
+  TRIP_STARTED
+  TRIP_FINISHED
+  CARD_PLAYED
+  PLAY_ACCEPTED
+  PLAY_BLOCKED
+  PLAY_REFLECTED
+  PLAY_EXPIRED
+  PLAYER_JOINED
+}
+
+model CardType {
+  id             String          @id
+  name           String
+  description    String
+  kind           CardKind
+  category       String
+  reactionEffect ReactionEffect?
+  emoji          String?
+  color          String?
+  isActive       Boolean         @default(true)
+  sortOrder      Int             @default(0)
+  pools          TripPoolCard[]
+  cards          PlayerCard[]
+}
+
+model Trip {
+  id                    String         @id @default(cuid())
+  name                  String
+  code                  String         @unique
+  status                TripStatus     @default(DRAFT)
+  responseWindowMinutes Int            @default(10)
+  creatorId             String
+  creator               User           @relation(fields: [creatorId], references: [id])
+  createdAt             DateTime       @default(now())
+  startedAt             DateTime?
+  finishedAt            DateTime?
+  players               TripPlayer[]
+  pool                  TripPoolCard[]
+  dealRules             TripDealRule[]
+  cards                 PlayerCard[]
+  plays                 Play[]
+  events                TripEvent[]
+}
+
+model TripPoolCard {
+  tripId     String
+  cardTypeId String
+  trip       Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  cardType   CardType @relation(fields: [cardTypeId], references: [id])
+
+  @@id([tripId, cardTypeId])
+}
+
+model TripDealRule {
+  tripId         String
+  category       String
+  cardsPerPlayer Int
+  trip           Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@id([tripId, category])
+}
+
+model TripPlayer {
+  id              String       @id @default(cuid())
+  tripId          String
+  displayName     String
+  userId          String?
+  joinedAt        DateTime?
+  trip            Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user            User?        @relation(fields: [userId], references: [id])
+  cards           PlayerCard[]
+  playsAsAttacker Play[]       @relation("attacker")
+  playsAsTarget   Play[]       @relation("target")
+
+  @@unique([tripId, displayName])
+  @@unique([tripId, userId])
+}
+
+model PlayerCard {
+  id         String     @id @default(cuid())
+  tripId     String
+  playerId   String
+  cardTypeId String
+  status     CardStatus @default(AVAILABLE)
+  lockedAt   DateTime?
+  trip       Trip       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  player     TripPlayer @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  cardType   CardType   @relation(fields: [cardTypeId], references: [id])
+  playedIn   Play?      @relation("attackCard")
+  reactedIn  Play?      @relation("reactionCard")
+
+  @@index([tripId, playerId, status])
+}
+
+model Play {
+  id             String      @id @default(cuid())
+  tripId         String
+  attackerId     String
+  targetId       String
+  cardId         String      @unique
+  status         PlayStatus  @default(PENDING)
+  createdAt      DateTime    @default(now())
+  expiresAt      DateTime
+  resolvedAt     DateTime?
+  reactionCardId String?     @unique
+  finalTargetId  String?
+  trip           Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  attacker       TripPlayer  @relation("attacker", fields: [attackerId], references: [id])
+  target         TripPlayer  @relation("target", fields: [targetId], references: [id])
+  card           PlayerCard  @relation("attackCard", fields: [cardId], references: [id])
+  reactionCard   PlayerCard? @relation("reactionCard", fields: [reactionCardId], references: [id])
+  events         TripEvent[]
+
+  @@index([tripId, status])
+  @@index([tripId, createdAt])
+}
+
+model TripEvent {
+  id            String    @id @default(cuid())
+  tripId        String
+  type          EventType
+  playId        String?
+  actorPlayerId String?
+  message       String
+  createdAt     DateTime  @default(now())
+  trip          Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  play          Play?     @relation(fields: [playId], references: [id])
+
+  @@index([tripId, createdAt])
 }

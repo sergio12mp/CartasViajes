@@ -13,6 +13,8 @@ Una aplicación móvil para jugar cartas durante un viaje entre amigos. Cada per
 
 ### Rarezas y reparto
 
+La colección pública está en `/cartas`, accesible sin cuenta desde la navegación, el inicio y el pie. Muestra las cartas activas de la base de datos con búsqueda por texto y filtros de categoría, rareza, tipo y pack. Solo se publican los campos de la carta y sus packs activos; las propuestas pendientes, las manos y los datos de jugadores no forman parte del catálogo. Consultar las cartas no modifica los permisos para jugar o desbloquear packs.
+
 Cada carta tiene una rareza: **común** (marco gris), **rara** (azul) o **legendaria** (dorado). Al configurar el viaje se elige cuántas legendarias recibe cada jugador (por defecto 1; nunca se repiten entre jugadores del mismo viaje) y cuántas raras y comunes completan la mano. Si no hay legendarias para todos, se sortean entre los jugadores y quien se quede sin una recibe 2 raras a cambio (la sustituta y una extra). El botón «Ajustar automáticamente» reparte el resto en un 40 % raras y 60 % comunes. Opcionalmente, el reparto de raras y comunes puede hacerse por categoría. Las raras y comunes no se repiten dentro de una mano mientras el mazo lo permita.
 
 ### Notificaciones

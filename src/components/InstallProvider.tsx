@@ -8,6 +8,7 @@ type InstallPromptEvent = Event & {
 };
 type InstallContextValue = {
   ready: boolean;
+  mobile: boolean;
   installed: boolean;
   available: boolean;
   busy: boolean;
@@ -20,12 +21,16 @@ const InstallContext = createContext<InstallContextValue | null>(null);
 export function InstallProvider({ children }: { children: ReactNode }) {
   const promptRef = useRef<InstallPromptEvent | null>(null);
   const [ready, setReady] = useState(false);
+  const [mobile, setMobile] = useState(false);
   const [installed, setInstalled] = useState(false);
   const [available, setAvailable] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    // iPadOS may identify as a Mac; window width alone also matches desktop windows.
+    setMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
     const displayMode = window.matchMedia("(display-mode: standalone)");
     function clearPrompt() {
       promptRef.current = null;
@@ -79,7 +84,7 @@ export function InstallProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  return <InstallContext.Provider value={{ ready, installed, available, busy, message, install }}>{children}</InstallContext.Provider>;
+  return <InstallContext.Provider value={{ ready, mobile, installed, available, busy, message, install }}>{children}</InstallContext.Provider>;
 }
 
 export function useInstall() {

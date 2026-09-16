@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useInstall } from "@/components/InstallProvider";
 
 export function InstallApp({ guide = false }: { guide?: boolean }) {
-  const { ready, installed, available, busy, message, install } = useInstall();
-  if (!guide && (!ready || installed)) return null;
+  const { ready, mobile, installed, available, busy, message, install } = useInstall();
+  if (!ready || !mobile || (!guide && installed)) return null;
 
   return <section aria-label="Instalar Tripu" className="rounded-2xl border border-primary/20 bg-accent/10 p-5 sm:p-6">
     <div className="flex items-start gap-4">

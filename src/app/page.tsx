@@ -18,7 +18,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
     <div className="grid gap-3 sm:grid-cols-3">{[["01", "Prepara el viaje", "Elige las cartas y reúne a la tripulación."], ["02", "Juega tu mano", "Lanza un ataque o guarda una defensa."], ["03", "Que quede escrito", "Sigue cada jugada en el diario del viaje."]].map(([number, title, text]) => <article key={number} className="panel"><span className="text-sm font-bold text-primary">{number}</span><h2 className="mt-4 text-base">{title}</h2><p className="mt-2 text-sm text-ink-soft">{text}</p></article>)}</div>
     <section className="panel space-y-3"><h2>¿Te han invitado?</h2><p className="text-sm text-ink-soft">Introduce el código del viaje para ver quién va y unirte.</p><JoinCodeForm /></section>
     <InstallApp />
-    <p className="text-xs text-muted">Juega desde el navegador o añade Tripu a tu pantalla de inicio.</p>
+    <p className="text-xs text-muted">Solo un código, tu cuenta de Google y tus amigos.</p>
   </div>;
   const trips = await getTripsForUser(session.user.id);
   return <div className="space-y-6"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="mb-1 text-sm text-muted">Tu próxima aventura</p><h1>Mis viajes</h1></div><Link className="btn" href="/trips/new">+ Crear viaje</Link></div>

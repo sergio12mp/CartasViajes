@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InfoPage } from "@/components/InfoPage";
+import { InstallApp } from "@/components/InstallApp";
 
 export const metadata: Metadata = { title: "Preguntas frecuentes", description: "Cómo empezar en Tripu, unirte a un viaje, jugar tus cartas y resolver las dudas de tu grupo." };
 const groups = [
@@ -31,7 +32,7 @@ const groups = [
 export default function FaqPage() {
   return <InfoPage eyebrow="Una mano con tus dudas" title="Preguntas frecuentes" intro="Desde el primer código hasta la última carta. Lo que conviene saber para empezar a jugar.">
     <nav aria-label="Temas de ayuda" className="flex flex-wrap gap-2">{groups.map(group => <a className="btn-secondary" href={`#${group.id}`} key={group.id}>{group.title}</a>)}</nav>
-    <aside className="panel space-y-3"><h2>¿Quieres tener Tripu junto a tus apps?</h2><p className="text-sm text-ink-soft">Añádela a la pantalla de inicio y entra a tus viajes desde su icono.</p><Link href="/instalar" className="btn-secondary">Ver guía para iPhone y Android →</Link></aside>
+    <InstallApp />
     {groups.map(group => <section id={group.id} key={group.id} className="scroll-mt-36 space-y-4" aria-labelledby={`${group.id}-title`}>
       <h2 id={`${group.id}-title`}>{group.title}</h2>
       <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">{group.questions.map(([question, answer]) => <details key={question} className="group">

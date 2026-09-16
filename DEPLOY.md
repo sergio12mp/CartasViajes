@@ -1,10 +1,10 @@
-# Desplegar CartasViajes
+# Desplegar Tripu
 
 Repositorio: `sergio12mp/CartasViajes`. La publicación y el push los realiza el propietario. La aplicación está preparada para Vercel Hobby, sin cron.
 
 ## 1. Neon: base de datos
 
-1. Crea un proyecto en [Neon](https://console.neon.tech/) para CartasViajes, preferiblemente en una región cercana a tus usuarios y a la función de Vercel.
+1. Crea un proyecto en [Neon](https://console.neon.tech/) para Tripu, preferiblemente en una región cercana a tus usuarios y a la función de Vercel.
 2. Utiliza una rama/base de desarrollo para pruebas y otra para producción.
 3. Copia las cadenas de conexión del panel a `.env`:
    - `DATABASE_URL`: conexión con pool, cuyo host incluye `-pooler`.
@@ -15,7 +15,7 @@ El esquema usa `url` y `directUrl` según el patrón de [Prisma 6 con Neon](http
 
 ## 2. Google OAuth
 
-1. En [Google Cloud Console](https://console.cloud.google.com/), crea el proyecto **CartasViajes**.
+1. En [Google Cloud Console](https://console.cloud.google.com/), crea el proyecto **Tripu**.
 2. En **Google Auth Platform → Información de marca**, rellena nombre de aplicación y correo de asistencia. Logo, dominios y enlaces son opcionales.
 3. En **Google Auth Platform → Público**, elige **Externo** y, mientras esté en pruebas, añade tus correos y los de los amigos como **test users**. Para abrir el acceso, publica la aplicación OAuth y completa los requisitos que indique Google.
 4. En **Google Auth Platform → Clientes**, crea un cliente OAuth de tipo **aplicación web**.
@@ -58,7 +58,18 @@ Si `/api/auth/providers` o `/api/auth/signin/google` devuelve **500 / Server err
 
 Consulta los [ajustes de proyecto de Vercel](https://vercel.com/docs/project-configuration/general-settings) y su [documentación de variables](https://vercel.com/docs/environment-variables). No se necesitan claves de resultados deportivos ni configuración de cron.
 
-## 4. Aplicar esquema y catálogo
+## 4. Stripe (packs premium)
+
+Por defecto los pagos están desactivados y todos los packs son gratuitos. Para cobrar, pon `PAYMENTS_ENABLED="true"` además de:
+
+1. Crea una cuenta en [Stripe](https://dashboard.stripe.com/) y copia la **clave secreta** (`sk_test_…` en pruebas, `sk_live_…` en producción) en `STRIPE_SECRET_KEY`.
+2. En **Developers → Webhooks**, añade un endpoint `https://TU-APP/api/stripe/webhook` con los eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired` y `charge.refunded`. Copia su **signing secret** en `STRIPE_WEBHOOK_SECRET`.
+3. Configura `NEXT_PUBLIC_APP_URL` con el dominio público (sin barra final) para que Stripe devuelva al usuario a la configuración del viaje.
+4. En local, instala la CLI de Stripe y ejecuta `stripe listen --forward-to localhost:3000/api/stripe/webhook`; usa el secreto que imprime como `STRIPE_WEBHOOK_SECRET` y la tarjeta de pruebas `4242 4242 4242 4242`.
+
+Los packs y sus precios se gestionan desde `/admin/packs`; las compras se listan en `/admin/purchases`. Si aún no hay Stripe, los packs premium aparecen bloqueados y puedes regalarlos por correo desde el panel.
+
+## 5. Aplicar esquema y catálogo
 
 Desde la raíz, con `.env` apuntando a la base elegida:
 

@@ -42,7 +42,7 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
   if (status === "checking" || status === "unsupported") return null;
   return <section className="panel flex flex-wrap items-center justify-between gap-3">
     <div className="min-w-0 flex-1"><p className="font-semibold">🔔 Notificaciones</p>
-      <p className="text-sm text-ink-soft">{status === "needs-install" ? "En iPhone, añade CartasViajes a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde ahí para recibir avisos." : status === "denied" ? "Has bloqueado las notificaciones. Actívalas en los ajustes del navegador para este sitio." : status === "on" ? "Te avisaremos cuando te lancen una carta o respondan a la tuya." : "Recibe un aviso cuando te lancen una carta, aunque tengas la app cerrada."}</p>
+      <p className="text-sm text-ink-soft">{status === "needs-install" ? "En iPhone, añade Tripu a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde ahí para recibir avisos." : status === "denied" ? "Has bloqueado las notificaciones. Actívalas en los ajustes del navegador para este sitio." : status === "on" ? "Te avisaremos cuando te lancen una carta o respondan a la tuya." : "Recibe un aviso cuando te lancen una carta, aunque tengas la app cerrada."}</p>
       {message && <p role="status" className="mt-1 text-xs text-muted">{message}</p>}
     </div>
     {status === "off" && <button type="button" className="btn" onClick={enable}>Activar</button>}

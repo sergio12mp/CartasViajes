@@ -40,6 +40,9 @@ export const cardTypeSchema = z.object({
   emoji: z.preprocess(v => (v == null || (typeof v === "string" && v.trim() === "") ? null : v), z.string().trim().max(8, "El emoji es demasiado largo.").nullable()),
   isActive: checkbox,
   sortOrder: z.coerce.number().int("Usa un orden entero.").min(0).max(10_000),
+  packId: z.preprocess(v => (v == null || v === "" ? null : v), idSchema.nullable()),
+  creditName: z.preprocess(v => (v == null || (typeof v === "string" && v.trim() === "") ? null : v), z.string().trim().max(40, "El crédito admite hasta 40 caracteres.").nullable()),
+  suggestionId: z.preprocess(v => (v == null || v === "" ? null : v), idSchema.nullable()),
 }).superRefine((card, ctx) => {
   if (card.kind === "REACTION" && !card.reactionEffect) ctx.addIssue({ code: "custom", path: ["reactionEffect"], message: "Una reacción necesita efecto: bloquear o devolver." });
   if (card.kind === "ATTACK" && card.reactionEffect) ctx.addIssue({ code: "custom", path: ["reactionEffect"], message: "Un ataque no tiene efecto de reacción." });
@@ -56,6 +59,21 @@ export const suggestionSchema = z.object({
   description: z.string().trim().min(5, "Describe la carta con al menos 5 caracteres.").max(500, "La descripción admite hasta 500 caracteres."),
   category: z.string().trim().min(2, "Indica una categoría.").max(60, "La categoría admite hasta 60 caracteres."),
   comment: z.string().trim().max(500, "El comentario admite hasta 500 caracteres."),
+  creditName: z.string().trim().max(40, "El nombre para el crédito admite hasta 40 caracteres."),
+});
+const euros = (label: string) => z.coerce.number().min(0, `El precio ${label} no puede ser negativo.`).max(500, `El precio ${label} es demasiado alto.`).transform(value => Math.round(value * 100));
+export const packSchema = z.object({
+  id: z.string().regex(/^[a-z0-9-]{2,60}$/, "El identificador solo admite minúsculas, números y guiones (2-60 caracteres)."),
+  name: z.string().trim().min(2, "El nombre necesita al menos 2 caracteres.").max(60, "El nombre admite hasta 60 caracteres."),
+  description: z.string().trim().min(5, "Describe el pack con al menos 5 caracteres.").max(300, "La descripción admite hasta 300 caracteres."),
+  emoji: z.preprocess(v => (v == null || (typeof v === "string" && v.trim() === "") ? null : v), z.string().trim().max(8).nullable()),
+  isPremium: checkbox,
+  priceTripCents: euros("por viaje"),
+  priceLifetimeCents: euros("para siempre"),
+  isActive: checkbox,
+  sortOrder: z.coerce.number().int("Usa un orden entero.").min(0).max(10_000),
+}).superRefine((pack, ctx) => {
+  if (pack.isPremium && pack.priceTripCents === 0 && pack.priceLifetimeCents === 0) ctx.addIssue({ code: "custom", path: ["priceLifetimeCents"], message: "Un pack premium necesita al menos un precio." });
 });
 export const videoSchema = z.object({
   url: z.string().trim().url("Pega un enlace válido.").max(300, "El enlace es demasiado largo."),

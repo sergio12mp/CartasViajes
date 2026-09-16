@@ -13,6 +13,9 @@ export function playExpiredNotification(p: { tripId: string; playId: string; for
     ? { title: `${p.cardName} se ha aplicado a ${p.targetName}`, body: "No respondió a tiempo, así que el efecto cuenta.", url: tripUrl(p.tripId), tag: `play-${p.playId}` }
     : { title: `Se te ha aplicado ${p.cardName}`, body: `Se agotó el tiempo para responder a ${p.attackerName}.`, url: tripUrl(p.tripId), tag: `play-${p.playId}` };
 }
+export function playerJoinedNotification(p: { tripId: string; tripName: string; playerName: string; claimed: number; total: number }): PushPayload {
+  return { title: `${p.playerName} se ha unido a ${p.tripName}`, body: `${p.claimed} de ${p.total} a bordo.${p.claimed === p.total ? " ¡Ya podéis iniciar el viaje!" : ""}`, url: tripUrl(p.tripId), tag: `join-${p.tripId}` };
+}
 export function tripStartedNotification(p: { tripId: string; tripName: string }): PushPayload {
   return { title: `¡${p.tripName} ha empezado!`, body: "Ya tienes tus cartas. Entra y mira tu mano.", url: tripUrl(p.tripId), tag: `trip-${p.tripId}` };
 }

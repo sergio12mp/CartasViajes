@@ -1,4 +1,4 @@
-# Verificación de CartasViajes
+# Verificación de Tripu
 
 ## Resultado local (15 de septiembre de 2026)
 

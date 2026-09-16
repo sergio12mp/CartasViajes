@@ -15,8 +15,9 @@ export async function getTripForUser(tripId: string, userId: string) {
 export async function getTripByCode(code: string) {
   if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(code)) return null;
   return prisma.trip.findUnique({ where: { code }, select: {
-    id: true, name: true, code: true, status: true,
+    id: true, name: true, code: true, status: true, legendariesPerPlayer: true, raresPerPlayer: true, commonsPerPlayer: true, dealByCategory: true, dealRules: true,
     players: { select: { id: true, displayName: true, userId: true, user: { select: { image: true } } }, orderBy: { displayName: "asc" } },
+    _count: { select: { pool: true } },
   } });
 }
 const playInclude = { attacker: true, target: true, card: { include: { cardType: true } }, reactionCard: { include: { cardType: true } } };

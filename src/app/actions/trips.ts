@@ -14,7 +14,9 @@ import { canClaimPlayer, canManageTrip, validateRetainedPlayers } from "@/lib/ga
 import { ActionError, actionResult, enforce, inTripTransaction, lockTrip, requireOne } from "@/lib/transactions";
 import { expiredNotifications, resolvePlaysInTransaction } from "@/lib/plays";
 import { sendNotifications } from "@/lib/push";
-import { tripStartedNotification } from "@/lib/game/notifications";
+import { playerJoinedNotification, tripStartedNotification } from "@/lib/game/notifications";
+import { getUnlockedPackIds } from "@/lib/packs";
+import { lockedPackNamesInPool } from "@/lib/game/packs";
 
 function refresh(tripId: string) {
   revalidatePath(`/trips/${tripId}`, "layout");
@@ -23,10 +25,12 @@ function refresh(tripId: string) {
 function dealConfigOf(trip: { legendariesPerPlayer: number; raresPerPlayer: number; commonsPerPlayer: number; dealByCategory: boolean }, rules: DealRule[]): DealConfig {
   return { legendariesPerPlayer: trip.legendariesPerPlayer, raresPerPlayer: trip.raresPerPlayer, commonsPerPlayer: trip.commonsPerPlayer, dealByCategory: trip.dealByCategory, rules };
 }
-async function validatedConfig(tx: Prisma.TransactionClient, input: TripInput) {
+async function validatedConfig(tx: Prisma.TransactionClient, input: TripInput, userId: string, tripId: string | null) {
   const ids = [...new Set(input.poolCardTypeIds)];
-  const cards = await tx.cardType.findMany({ where: { id: { in: ids }, isActive: true } });
+  const cards = await tx.cardType.findMany({ where: { id: { in: ids }, isActive: true }, include: { pack: { select: { id: true, name: true, isPremium: true } } } });
   if (cards.length !== ids.length) throw new ActionError("Alguna carta ya no está disponible. Revisa la selección.");
+  const locked = lockedPackNamesInPool(cards, await getUnlockedPackIds(userId, tripId));
+  if (locked.length) throw new ActionError(`El pack ${locked.join(", ")} no está desbloqueado para este viaje.`);
   const rules = input.dealByCategory ? Object.entries(input.dealRules ?? {}).map(([category, cardsPerPlayer]) => ({ category, cardsPerPlayer })) : [];
   const config = dealConfigOf(input, rules);
   const message = validateDealConfig(cards.map(c => ({ cardTypeId: c.id, category: c.category, rarity: c.rarity })), config, input.playerNames.length);
@@ -40,7 +44,7 @@ export async function createTrip(_previous: ActionState, form: FormData): Promis
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
   return actionResult(async () => {
     const trip = await createTripWithUniqueCode(code => prisma.$transaction(async tx => {
-      const { pool, rules, settings } = await validatedConfig(tx, parsed.data);
+      const { pool, rules, settings } = await validatedConfig(tx, parsed.data, user.id, null);
       return tx.trip.create({ data: {
         name: parsed.data.name, responseWindowMinutes: parsed.data.responseWindowMinutes, creatorId: user.id, code, ...settings,
         pool: { create: pool }, dealRules: { create: rules }, players: { create: parsed.data.playerNames.map(displayName => ({ displayName })) },
@@ -60,7 +64,7 @@ export async function updateTripSettings(_previous: ActionState, form: FormData)
     await inTripTransaction(id.data, user.id, async (tx, trip) => {
       enforce(canManageTrip(trip, user.id, "DRAFT"));
       enforce(validateRetainedPlayers(trip.players, parsed.data.playerNames));
-      const { pool, rules, settings } = await validatedConfig(tx, parsed.data);
+      const { pool, rules, settings } = await validatedConfig(tx, parsed.data, user.id, trip.id);
       await tx.tripPoolCard.deleteMany({ where: { tripId: trip.id } });
       await tx.tripDealRule.deleteMany({ where: { tripId: trip.id } });
       // Preserve retained IDs, especially claimed slots, across settings edits.
@@ -79,7 +83,7 @@ export async function claimPlayer(_previous: ActionState, form: FormData): Promi
   const parsed = z.object({ tripId: idSchema, playerId: idSchema, code: z.string().regex(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/, "El código no es válido.") }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
   return actionResult(async () => {
-    await prisma.$transaction(async tx => {
+    const joined = await prisma.$transaction(async tx => {
       const trip = await lockTrip(tx, parsed.data.tripId);
       // The invitation code authorizes a first claim, before membership exists.
       if (trip.code !== parsed.data.code) throw new ActionError("La invitación no corresponde a este viaje.");
@@ -89,7 +93,9 @@ export async function claimPlayer(_previous: ActionState, form: FormData): Promi
       requireOne(claimed.count, "Ese nombre acaba de ser reclamado por otra persona.");
       const player = trip.players.find(p => p.id === parsed.data.playerId)!;
       await tx.tripEvent.create({ data: { tripId: trip.id, actorPlayerId: player.id, type: "PLAYER_JOINED", message: buildEventMessage("PLAYER_JOINED", { attackerName: "", targetName: player.displayName, cardName: "" }) } });
+      return { creatorId: trip.creatorId, tripName: trip.name, playerName: player.displayName, claimed: trip.players.filter(p => p.userId).length + 1, total: trip.players.length };
     });
+    if (joined.creatorId !== user.id) await sendNotifications([{ userIds: [joined.creatorId], payload: playerJoinedNotification({ tripId: parsed.data.tripId, ...joined }) }]);
     refresh(parsed.data.tripId);
     return { ok: true, message: "¡Ya estás dentro!", redirectTo: `/trips/${parsed.data.tripId}` };
   });

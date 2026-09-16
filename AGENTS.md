@@ -1,4 +1,4 @@
-# CartasViajes
+# Tripu
 
 - Use English for code and comments, Spanish for UI and errors.
 - Never print or commit secrets or `.env` files. Never push; the user publishes.

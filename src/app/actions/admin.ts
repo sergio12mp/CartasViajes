@@ -17,11 +17,15 @@ export async function upsertCardType(_previous: ActionState, form: FormData): Pr
   await requireAdmin();
   const parsed = cardTypeSchema.safeParse({ ...Object.fromEntries(form), isActive: form.get("isActive") ?? false });
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
-  const { id, ...data } = parsed.data;
+  const { id, suggestionId, ...data } = parsed.data;
   const creating = form.get("mode") === "create";
   return actionResult(async () => {
     if (creating && await prisma.cardType.findUnique({ where: { id }, select: { id: true } })) throw new ActionError("Ya existe una carta con ese identificador.");
-    await prisma.cardType.upsert({ where: { id }, create: { id, ...data }, update: data });
+    if (data.packId && !await prisma.cardPack.findUnique({ where: { id: data.packId }, select: { id: true } })) throw new ActionError("Ese pack no existe.");
+    await prisma.$transaction(async tx => {
+      await tx.cardType.upsert({ where: { id }, create: { id, ...data, suggestionId }, update: { ...data, ...(suggestionId ? { suggestionId } : {}) } });
+      if (suggestionId) await tx.cardSuggestion.updateMany({ where: { id: suggestionId }, data: { status: "REVIEWED" } });
+    });
     refreshAdmin();
     return { ok: true, message: creating ? `Carta ${data.name} creada.` : `Carta ${data.name} guardada.` };
   });

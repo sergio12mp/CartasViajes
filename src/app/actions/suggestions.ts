@@ -15,7 +15,7 @@ export async function submitCardSuggestion(_previous: ActionState, form: FormDat
   return actionResult(async () => {
     const open = await prisma.cardSuggestion.count({ where: { userId: user.id, status: "NEW" } });
     if (open >= MAX_OPEN_SUGGESTIONS) throw new ActionError("Tienes muchas sugerencias pendientes de revisar. ¡Gracias! Espera a que las revisemos.");
-    await prisma.cardSuggestion.create({ data: { userId: user.id, ...parsed.data, comment: parsed.data.comment || null } });
+    await prisma.cardSuggestion.create({ data: { userId: user.id, ...parsed.data, comment: parsed.data.comment || null, creditName: parsed.data.creditName || user.name || null } });
     revalidatePath("/sugerencias");
     revalidatePath("/admin", "layout");
     return { ok: true, message: "Sugerencia enviada. La revisaremos pronto." };

@@ -14,6 +14,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
       <form action={async () => { "use server"; await signIn("google"); }}><button className="btn">Entrar con Google →</button></form>
     </section>
     <div className="grid gap-3 sm:grid-cols-3">{[["01", "Prepara el viaje", "Elige las cartas y reúne a la tripulación."], ["02", "Juega tu mano", "Lanza un ataque o guarda una defensa."], ["03", "Que quede escrito", "Sigue cada jugada en el diario del viaje."]].map(([number, title, text]) => <article key={number} className="panel"><span className="text-sm font-bold text-primary">{number}</span><h2 className="mt-4 text-base">{title}</h2><p className="mt-2 text-sm text-ink-soft">{text}</p></article>)}</div>
+    <section className="panel space-y-3"><h2>¿Te han invitado?</h2><p className="text-sm text-ink-soft">Introduce el código del viaje para ver quién va y unirte.</p><JoinCodeForm /></section>
     <p className="text-xs text-muted">Sin descargas. Solo un código, tu cuenta de Google y tus amigos.</p>
   </div>;
   const trips = await getTripsForUser(session.user.id);

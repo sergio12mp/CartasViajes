@@ -8,6 +8,6 @@ export function VideoSubmitForm({ tripId, trips }: { tripId?: string; trips?: { 
       <label className="block space-y-2"><span>Destino (opcional)</span><input name="destination" maxLength={60} placeholder="Cancún" /></label>
     </div>
     {tripId ? <input type="hidden" name="tripId" value={tripId} /> : trips && trips.length > 0 && <label className="block space-y-2"><span>Viaje (opcional)</span><select name="tripId" defaultValue=""><option value="">Sin viaje</option>{trips.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>}
-    <p className="text-xs text-muted">Lo revisaremos antes de publicarlo. Etiqueta a @CartasViajes o usa #CartasViajes para que lo encontremos.</p>
+    <p className="text-xs text-muted">Lo revisaremos antes de publicarlo. Etiqueta a @Tripu o usa #Tripu para que lo encontremos.</p>
   </StateForm>;
 }

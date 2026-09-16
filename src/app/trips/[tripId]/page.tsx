@@ -6,7 +6,7 @@ import { getVideosForTrip } from "@/lib/videos";
 import { resolveExpiredPlays } from "@/lib/plays";
 import { startTrip, finishTrip } from "@/app/actions/trips";
 import { AutoRefresh } from "@/components/AutoRefresh";
-import { CopyButton } from "@/components/CopyButton";
+import { ShareInvite } from "@/components/ShareInvite";
 import { PlayerList } from "@/components/PlayerList";
 import { JoinPicker } from "@/components/JoinPicker";
 import { ActionForm } from "@/components/ActionForm";
@@ -19,6 +19,7 @@ import { FeedbackForm } from "@/components/FeedbackForm";
 import { VideoSubmitForm } from "@/components/VideoSubmitForm";
 import { TikTokEmbed } from "@/components/TikTokEmbed";
 import { PushToggle } from "@/components/PushToggle";
+import { ShareImage } from "@/components/ShareImage";
 export const dynamic = "force-dynamic";
 export default async function TripPage({ params }: { params: Promise<{ tripId: string }> }) {
   const user = await requireUser();
@@ -38,7 +39,7 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
     {trip.status !== "FINISHED" && <AutoRefresh />}
     <Link href="/" className="text-sm text-primary">← Mis viajes</Link>
     <header className="space-y-3"><span className="badge">{statusLabels[trip.status]}</span><h1 className="break-words">{trip.name}</h1><div className="flex flex-wrap items-center justify-between gap-3 text-sm text-ink-soft"><span>{me ? `Juegas como ${me.displayName}` : "Elige tu nombre para jugar"} · {trip.responseWindowMinutes} min por ataque</span><Link href={`/trips/${tripId}/history`} className="font-semibold text-primary">Historial ↗</Link></div></header>
-    {trip.status !== "FINISHED" && <section className="panel flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-muted">Código de embarque</p><p className="mt-2 font-mono text-3xl font-bold tracking-[0.2em]">{trip.code}</p></div><CopyButton path={`/join/${trip.code}`} /></section>}
+    {trip.status !== "FINISHED" && <section className="panel flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-muted">Código de embarque</p><p className="mt-2 font-mono text-3xl font-bold tracking-[0.2em]">{trip.code}</p></div><ShareInvite tripId={tripId} tripName={trip.name} code={trip.code} /></section>}
     {!me && trip.status !== "FINISHED" && <JoinPicker tripId={tripId} code={trip.code} players={players} />}
     {me && trip.status !== "FINISHED" && <PushToggle publicKey={process.env.VAPID_PUBLIC_KEY ?? null} />}
     {trip.status === "DRAFT" && <>
@@ -55,6 +56,7 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
     {trip.status === "FINISHED" && <>
       <section className="panel space-y-4"><p className="text-4xl" aria-hidden>🏁</p><h2>Un viaje para recordar</h2><p className="text-ink-soft">{history?.length ?? 0} jugadas y muchas historias.</p><Link href={`/trips/${tripId}/history`} className="btn">Ver el historial completo</Link></section>
       <section className="panel space-y-4"><h2>Quien más cartas ha sufrido</h2><ol className="space-y-3">{ranking.map((p, i) => <li key={p.id} className="flex justify-between gap-3 border-b border-border pb-3 text-sm"><span>{i + 1}. {p.displayName}</span><strong>{p.received} cartas</strong></li>)}</ol><p className="text-xs text-muted">Los ataques devueltos cuentan para quien los lanzó. Los bloqueados con Escudo no cuentan.</p></section>
+      <section className="panel space-y-4"><div><h2>Comparte el viaje</h2><p className="mt-1 text-sm text-ink-soft">Una imagen con el ranking, el MVP y la carta del viaje, lista para el grupo o para Stories.</p></div><ShareImage src={`/trips/${tripId}/summary`} filename={`tripu-${trip.code.toLowerCase()}.png`} title={trip.name} text={`${trip.name} · jugado con Tripu`} label="Compartir resumen ↗" kind="SUMMARY" tripId={tripId} /></section>
       <section className="panel space-y-4"><div><h2>¿Qué tal ha ido?</h2><p className="mt-1 text-sm text-ink-soft">Tu valoración nos ayuda a ajustar las cartas para los próximos viajes.</p></div><FeedbackForm tripId={tripId} pool={trip.pool.map(p => ({ id: p.cardTypeId, name: p.cardType.name, emoji: p.cardType.emoji }))} existing={feedback} /></section>
       <section className="panel space-y-4"><div><h2>¿Grabasteis un TikTok?</h2><p className="mt-1 text-sm text-ink-soft">Compártelo con la comunidad; quedará enlazado a este viaje.</p></div><VideoSubmitForm tripId={tripId} /></section>
       {videos.length > 0 && <section className="space-y-4"><h2>Vídeos de este viaje</h2><div className="grid gap-6 sm:grid-cols-2">{videos.map(video => <article key={video.id} className="panel space-y-2"><TikTokEmbed url={video.url} videoId={video.videoId} title={video.title} /><p className="text-sm text-ink-soft">{video.title ?? "Sin título"}{video.destination && ` · ${video.destination}`}</p></article>)}</div></section>}

@@ -22,6 +22,7 @@ model User {
   suggestions   CardSuggestion[]
   videos        CommunityVideo[]
   pushSubscriptions PushSubscription[]
+  purchases     PackPurchase[]
   createdAt     DateTime     @default(now())
 }
 
@@ -132,6 +133,37 @@ enum VideoStatus {
   REJECTED
 }
 
+enum PurchaseScope {
+  TRIP
+  LIFETIME
+}
+
+enum PurchaseStatus {
+  PENDING
+  PAID
+  REFUNDED
+}
+
+enum ShareKind {
+  SUMMARY
+  CARD
+  INVITE
+}
+
+model CardPack {
+  id                 String         @id
+  name               String
+  description        String
+  emoji              String?
+  isPremium          Boolean        @default(true)
+  priceTripCents     Int            @default(0)
+  priceLifetimeCents Int            @default(0)
+  isActive           Boolean        @default(true)
+  sortOrder          Int            @default(0)
+  cards              CardType[]
+  purchases          PackPurchase[]
+}
+
 model CardType {
   id             String          @id
   name           String
@@ -144,9 +176,47 @@ model CardType {
   color          String?
   isActive       Boolean         @default(true)
   sortOrder      Int             @default(0)
+  packId         String?
+  creditName     String?
+  suggestionId   String?         @unique
+  pack           CardPack?       @relation(fields: [packId], references: [id])
+  suggestion     CardSuggestion? @relation(fields: [suggestionId], references: [id])
   pools          TripPoolCard[]
   cards          PlayerCard[]
   favorites      TripFeedback[]
+}
+
+model PackPurchase {
+  id                    String         @id @default(cuid())
+  userId                String
+  packId                String
+  tripId                String?
+  scope                 PurchaseScope
+  status                PurchaseStatus @default(PENDING)
+  amountCents           Int
+  currency              String         @default("eur")
+  stripeSessionId       String         @unique
+  stripePaymentIntentId String?
+  createdAt             DateTime       @default(now())
+  paidAt                DateTime?
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pack                  CardPack       @relation(fields: [packId], references: [id])
+  trip                  Trip?          @relation(fields: [tripId], references: [id], onDelete: SetNull)
+
+  @@index([userId, packId])
+  @@index([tripId])
+}
+
+model ShareEvent {
+  id         String    @id @default(cuid())
+  kind       ShareKind
+  tripId     String?
+  userId     String?
+  cardTypeId String?
+  createdAt  DateTime  @default(now())
+
+  @@index([kind, createdAt])
+  @@index([tripId])
 }
 
 model Trip {
@@ -172,6 +242,7 @@ model Trip {
   events                TripEvent[]
   feedback              TripFeedback[]
   videos                CommunityVideo[]
+  purchases             PackPurchase[]
 }
 
 model TripFeedback {
@@ -197,9 +268,11 @@ model CardSuggestion {
   description String
   category    String
   comment     String?
+  creditName  String?
   status      SuggestionStatus @default(NEW)
   createdAt   DateTime         @default(now())
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card        CardType?
 
   @@index([status, createdAt])
 }

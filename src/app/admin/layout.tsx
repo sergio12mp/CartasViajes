@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 export const dynamic = "force-dynamic";
-const sections = [["/admin", "Resumen"], ["/admin/cards", "Cartas"], ["/admin/videos", "Vídeos"], ["/admin/feedback", "Valoraciones"], ["/admin/sugerencias", "Sugerencias"], ["/admin/stats", "Estadísticas"]];
+const sections = [["/admin", "Resumen"], ["/admin/cards", "Cartas"], ["/admin/packs", "Packs"], ["/admin/purchases", "Compras"], ["/admin/videos", "Vídeos"], ["/admin/feedback", "Valoraciones"], ["/admin/sugerencias", "Sugerencias"], ["/admin/stats", "Estadísticas"]];
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
   return <div className="space-y-6">

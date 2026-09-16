@@ -1,4 +1,4 @@
-# CartasViajes
+# Tripu
 
 Una aplicación móvil para jugar cartas durante un viaje entre amigos. Cada persona entra con Google, reclama su nombre y recibe una mano al azar. Ataques, escudos, boomerangs y un diario compartido de todas las jugadas.
 
@@ -19,11 +19,21 @@ Cada carta tiene una rareza: **común** (marco gris), **rara** (azul) o **legend
 
 Cada jugador puede activar avisos push desde la página del viaje (botón «Activar»). Recibe una notificación cuando le lanzan una carta, cuando responden a la suya, cuando expira una jugada y cuando empieza el viaje. Requiere `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT`; sin ellas el botón no aparece y el juego funciona igual. En iPhone solo funciona con la app añadida a la pantalla de inicio (iOS 16.4+); la interfaz lo indica. El envío es best-effort tras confirmar cada jugada y las suscripciones caducadas se eliminan solas.
 
+### Compartir e invitar
+
+- La invitación (`/join/CÓDIGO`) muestra el viaje, la tripulación y el reparto antes de iniciar sesión; el login solo hace falta para reclamar un nombre. El botón «Invitar amigos» usa el menú de compartir del móvil.
+- Al finalizar, «Compartir resumen» genera una imagen (ranking, MVP y carta del viaje) con `next/og`. Cada carta tiene su tarjeta gráfica en `/cards/ID/image`, compartible desde la mano.
+- El creador recibe un aviso push cuando alguien reclama su nombre.
+
+### Packs premium
+
+Las cartas se agrupan en packs (`/admin/packs`). **Mientras `PAYMENTS_ENABLED` no sea `"true"`, todos los packs están abiertos para todo el mundo** (fase de pruebas). Con pagos activos, los packs premium se desbloquean con Stripe Checkout **por viaje** o **para siempre**, con precios independientes, y el admin puede regalarlos por correo. El servidor rechaza cualquier carta de un pack no desbloqueado al guardar la configuración, y las manos ya repartidas nunca se tocan. Consulta [DEPLOY.md](DEPLOY.md) para el webhook.
+
 ### Comunidad, sugerencias y administración
 
-- `/comunidad` muestra TikToks aprobados de gente jugando; cualquier usuario puede enviar un enlace, opcionalmente asociado a un viaje y un destino.
-- `/sugerencias` recoge propuestas de cartas nuevas.
-- `/admin` (solo para los correos de `ADMIN_EMAILS`) permite crear, editar y retirar cartas, aprobar vídeos, leer valoraciones y sugerencias, y ver qué cartas se juegan más y con qué respuesta.
+- `/comunidad` muestra TikToks aprobados de gente jugando y las cartas creadas por la comunidad; cualquier usuario puede enviar un enlace, opcionalmente asociado a un viaje y un destino.
+- `/sugerencias` recoge propuestas de cartas nuevas con el nombre que quiera cada persona para el crédito; el admin puede convertirlas en carta y aparece «Propuesta por X».
+- `/admin` (solo para los correos de `ADMIN_EMAILS`) permite crear, editar y retirar cartas y packs, ver compras, aprobar vídeos, leer valoraciones y sugerencias, y seguir las métricas: K-factor (invitados que crean un viaje en 60 días), activación (viajes que se juegan con ≥ 3 a bordo), profundidad (cartas por jugador) y compartición (resúmenes compartidos).
 
 La ventana de respuesta es de 1 a 120 minutos. Al llegar al vencimiento, el ataque se considera aceptado. El servidor materializa las expiraciones al cargar el viaje o el historial, o al ejecutar una acción de juego. Las páginas se actualizan cada 5 segundos mientras están visibles. Sin visitas no se ejecuta ningún temporizador de servidor.
 

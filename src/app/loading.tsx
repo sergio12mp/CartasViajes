@@ -1,1 +1,2 @@
-export default function Loading() { return <p role="status" className="panel animate-pulse text-sm text-muted">Preparando las cartas…</p>; }
+import { LoadingScreen } from "@/components/LoadingScreen";
+export default function Loading() { return <LoadingScreen />; }

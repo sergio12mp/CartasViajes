@@ -39,4 +39,24 @@
   .badge-rare { @apply inline-flex rounded-full bg-rarity-rare/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rarity-rare; }
   .badge-legendary { @apply inline-flex rounded-full bg-rarity-legendary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rarity-legendary; }
   .nav-link { @apply whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold text-ink-soft hover:bg-bg hover:text-ink; }
+  .info-copy { @apply space-y-4 text-sm leading-7 text-ink-soft; }
+  .info-copy a { @apply font-medium text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary; }
+  .info-copy ul { @apply list-disc space-y-2 pl-5; }
+  .info-copy h2 { @apply text-lg text-ink; }
+}
+
+.loading-card-left { transform: translateX(-8px) rotate(-18deg); }
+.loading-card-right { transform: translateX(8px) rotate(18deg); }
+@media (prefers-reduced-motion: no-preference) {
+  .loading-card-center { animation: card-float 2.4s ease-in-out infinite; }
+  .loading-skeleton { animation: loading-fade 2s ease-in-out infinite; }
+  .loading-dot { animation: loading-fade 1.2s ease-in-out infinite; }
+}
+@keyframes card-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-7px) rotate(3deg); }
+}
+@keyframes loading-fade {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
 }

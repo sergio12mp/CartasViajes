@@ -37,6 +37,16 @@ Las cartas se agrupan en packs (`/admin/packs`). **Mientras `PAYMENTS_ENABLED` n
 
 La ventana de respuesta es de 1 a 120 minutos. Al llegar al vencimiento, el ataque se considera aceptado. El servidor materializa las expiraciones al cargar el viaje o el historial, o al ejecutar una acción de juego. Las páginas se actualizan cada 5 segundos mientras están visibles. Sin visitas no se ejecuta ningún temporizador de servidor.
 
+## Ayuda, información y pantallas de carga
+
+El pie de página enlaza páginas públicas, accesibles sin iniciar sesión: `/faq`, `/sobre-nosotros`, `/contacto`, `/aviso-legal`, `/privacidad`, `/cookies` y `/condiciones`.
+
+Los datos públicos del titular se completan en `src/lib/site-info.ts`. Hasta disponer de nombre o razón social, identificación fiscal, domicilio y correo confirmados, las páginas legales muestran que están en preparación y llevan `noindex`. También hay que confirmar conservación de datos, bases del tratamiento de métricas, proveedores y condiciones de contratación antes de considerar definitivos los textos. No se deducen datos personales de las credenciales ni de los administradores.
+
+Los vídeos de TikTok requieren activación individual: no se carga su reproductor hasta pulsar «Permitir y cargar vídeo». «Ocultar vídeo» lo desmonta; no se guarda consentimiento permanente. Las cookies técnicas de Auth.js se describen por separado. La implementación sigue el [reproductor oficial de TikTok](https://developers.tiktok.com/docs/en/embed-player); los textos toman como referencia la [guía de cookies de la AEPD](https://www.aepd.es/guias/guia-cookies.pdf) y la [información exigida al titular](https://www.boe.es/buscar/act.php?id=BOE-A-2002-13758#a10).
+
+`LoadingScreen` ofrece variantes para listados, manos, formularios e historial. Cada ruta usa su mensaje y estructura; las animaciones CSS respetan `prefers-reduced-motion`. Los elementos decorativos se ocultan a lectores de pantalla y el mensaje de carga se anuncia una sola vez. La cabecera utiliza `Suspense` para que la consulta de sesión no retrase la aparición del contenido de carga.
+
 ## Stack
 
 Next.js 15 App Router · React 19 · TypeScript strict · Prisma 6 · Neon Postgres · Auth.js v5 con Google y sesiones en BD · Tailwind CSS v4 · Zod · ESLint · Vitest. Node **24**, npm **11**. La aplicación vive en la raíz del repositorio.

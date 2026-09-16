@@ -8,7 +8,7 @@ Una aplicación móvil para jugar cartas durante un viaje entre amigos. Cada per
 2. Comparte el enlace de invitación o el código de 6 caracteres.
 3. Cada persona entra con Google y reclama su nombre. El creador también elige el suyo.
 4. El creador inicia el viaje: todos los nombres reciben cartas, incluso quienes llegan tarde.
-5. Juega un ataque contra otra persona. Puede aceptarlo, bloquearlo con Escudo o devolverlo con Rebote. Las cartas jugadas quedan marcadas como usadas; no hay reacciones encadenadas.
+5. Cada vez que uses una carta, grita **«¡Tripu!»** para avisar al grupo, tanto al atacar como al reaccionar. Juega un ataque contra otra persona: puede aceptarlo, bloquearlo con Escudo o devolverlo con Rebote. Las cartas jugadas quedan marcadas como usadas; no hay reacciones encadenadas. Si alguien pregunta por el grito, ¡contadle a qué estáis jugando!
 6. Sigue la actividad y el historial. Al finalizar el viaje, los ataques pendientes se aplican, aparece el resumen de quién recibió más cartas y cada jugador puede valorar el viaje y compartir un TikTok.
 
 ### Rarezas y reparto

@@ -5,6 +5,7 @@ import { playCard } from "@/app/actions/plays";
 import { initialActionState } from "@/lib/action-state";
 import type { HandCard } from "./CardTile";
 import { ShareImage } from "./ShareImage";
+import { TripuReminder } from "./TripuReminder";
 export function PlayCardDialog({ card, tripId, targets, onClose }: { card: HandCard; tripId: string; targets: { id: string; displayName: string }[]; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [state, action, pending] = useActionState(playCard, initialActionState);
@@ -18,6 +19,7 @@ export function PlayCardDialog({ card, tripId, targets, onClose }: { card: HandC
     <form action={action} className="space-y-4"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="cardId" value={card.id} />
       <label className="block space-y-2"><span>¿A quién se la juegas?</span><select name="targetPlayerId" required defaultValue=""><option value="" disabled>Elige un objetivo</option>{targets.map(p => <option key={p.id} value={p.id}>{p.displayName}</option>)}</select></label>
       <p className="text-xs text-muted">La carta quedará marcada como usada en cuanto la juegues.</p>
+      <TripuReminder />
       {state.message && <p role="status" className={state.ok ? "text-success" : "text-danger"}>{state.message}</p>}
       <button className="btn w-full" disabled={pending}>{pending ? "Jugando…" : "Jugar carta"}</button>
     </form>

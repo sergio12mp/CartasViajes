@@ -12,6 +12,7 @@ const groups = [
     ["¿Qué pasa si llego cuando el viaje ya ha empezado?", "Puedes reclamar un nombre libre mientras el viaje siga activo. Al empezar se reparten cartas a todos los nombres, así que encontrarás la mano que ya te correspondía."],
   ] },
   { id: "jugar", title: "Con las cartas en la mano", questions: [
+    ["¿Cuándo hay que gritar «¡Tripu!»?", "Cada vez que uses una carta, grita «¡Tripu!» al jugarla. Vale tanto para los ataques como para las reacciones, como Escudo o Rebote. Es la señal para avisar al resto del grupo de que hay una jugada. Y si alguien de alrededor pregunta qué estáis haciendo, ¡contadle que estáis jugando a Tripu!"],
     ["¿Cómo se reparten las cartas?", "El creador elige cuántas cartas comunes, raras y legendarias recibe cada persona. Las legendarias no se repiten entre jugadores del mismo viaje. Las demás evitan repetirse dentro de una mano mientras el mazo lo permita. Si faltan legendarias, se compensan con cartas del resto del mazo."],
     ["¿Cómo lanzo un ataque?", "Toca una carta de ataque disponible en tu mano, elige a otra persona y confirma. Tu carta quedará usada y el objetivo tendrá el tiempo configurado para responder. No puedes atacarte a ti mismo."],
     ["¿Para qué sirven las cartas de reacción?", "Se usan desde el ataque que has recibido, antes de que venza el tiempo. Un Escudo bloquea el efecto; una carta de devolución lo dirige a quien lo lanzó. No se puede reaccionar de nuevo a una devolución."],

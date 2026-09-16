@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { subscribePush, unsubscribePush } from "@/app/actions/push";
 type Status = "checking" | "unsupported" | "needs-install" | "denied" | "off" | "on" | "busy";
 function toKey(base64: string) {
@@ -10,10 +11,11 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
   const [status, setStatus] = useState<Status>("checking");
   const [message, setMessage] = useState("");
   useEffect(() => {
-    if (!publicKey || !("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) { setStatus("unsupported"); return; }
-    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    if (!publicKey || !("serviceWorker" in navigator)) { setStatus("unsupported"); return; }
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     const standalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as { standalone?: boolean }).standalone === true;
     if (ios && !standalone) { setStatus("needs-install"); return; }
+    if (!("PushManager" in window) || !("Notification" in window)) { setStatus("unsupported"); return; }
     navigator.serviceWorker.register("/sw.js").then(async registration => {
       const existing = await registration.pushManager.getSubscription();
       setStatus(existing ? "on" : Notification.permission === "denied" ? "denied" : "off");
@@ -46,6 +48,7 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
       {message && <p role="status" className="mt-1 text-xs text-muted">{message}</p>}
     </div>
     {status === "off" && <button type="button" className="btn" onClick={enable}>Activar</button>}
+    {status === "needs-install" && <Link href="/instalar#iphone" className="btn-secondary">Cómo instalar Tripu</Link>}
     {status === "on" && <button type="button" className="btn-secondary" onClick={disable}>Desactivar</button>}
     {status === "busy" && <button type="button" className="btn-secondary" disabled>Un momento…</button>}
   </section>;

@@ -5,15 +5,17 @@ import Image from "next/image";
 import { AuthButtons } from "@/components/AuthButtons";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
+import { InstallProvider } from "@/components/InstallProvider";
 import { Suspense } from "react";
 export const metadata: Metadata = {
   title: { default: "Tripu", template: "%s · Tripu" },
   description: "El viaje se pone en juego. Un viaje, tus amigos y una mano de cartas.",
+  appleWebApp: { capable: true, title: "Tripu", statusBarStyle: "default" },
   icons: { icon: [{ url: "/favicon-32.png", sizes: "32x32" }, { url: "/icon-192.png", sizes: "192x192" }], apple: "/apple-icon.png" },
   openGraph: { title: "Tripu", description: "El viaje se pone en juego. Un viaje, tus amigos y una mano de cartas.", siteName: "Tripu", locale: "es_ES", type: "website" },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es"><body className="flex min-h-dvh flex-col">
+  return <html lang="es"><body className="flex min-h-dvh flex-col"><InstallProvider>
     <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-surface focus:p-3">Saltar al contenido</a>
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
@@ -24,5 +26,5 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </header>
     <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">{children}</main>
     <SiteFooter />
-  </body></html>;
+  </InstallProvider></body></html>;
 }

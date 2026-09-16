@@ -39,7 +39,9 @@ La ventana de respuesta es de 1 a 120 minutos. Al llegar al vencimiento, el ataq
 
 ## Ayuda, información y pantallas de carga
 
-El pie de página enlaza páginas públicas, accesibles sin iniciar sesión: `/faq`, `/sobre-nosotros`, `/contacto`, `/aviso-legal`, `/privacidad`, `/cookies` y `/condiciones`.
+El pie de página enlaza páginas públicas, accesibles sin iniciar sesión: `/instalar`, `/faq`, `/sobre-nosotros`, `/contacto`, `/aviso-legal`, `/privacidad`, `/cookies` y `/condiciones`.
+
+**Instalar en el móvil:** `/instalar` contiene los pasos para iPhone con Safari y Android con Chrome, siguiendo las guías de [Apple](https://support.apple.com/es-es/guide/iphone/iphea86e5236/ios) y [Google](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid&hl=es). Se enlaza desde el inicio, las FAQ, el pie y el aviso de notificaciones en iPhone. `InstallProvider` conserva el evento `beforeinstallprompt` durante la navegación y `InstallApp` ofrece el botón únicamente cuando el navegador lo permite; el diálogo se abre al pulsarlo. La cancelación y los errores mantienen disponible la guía manual. La promoción del inicio se oculta al abrir en modo independiente o recibir `appinstalled`. La instalación no habilita notificaciones ni funcionamiento sin conexión.
 
 Los datos públicos del titular se mantienen en `src/lib/site-info.ts`: nombre, correo y país confirmados para un proyecto personal abierto a cualquiera con la URL. Los campos fiscales, domicilio y registro solo se muestran si se han proporcionado; su necesidad debe revisarse según la actividad del servicio. `legalContentReviewed` mantiene las páginas legales en revisión y con `noindex` hasta confirmar conservación de datos, bases del tratamiento de métricas, proveedores y las condiciones de contratación que correspondan. Publicar los datos de contacto no completa esa revisión. No se deducen datos personales de las credenciales ni de los administradores.
 

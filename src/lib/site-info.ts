@@ -20,6 +20,7 @@ export const siteOperator: {
 export const legalContentReviewed = false;
 export const legalReviewDate = "16 de septiembre de 2026";
 export const informationLinks = [
+  { href: "/instalar", label: "Instalar en el móvil" },
   { href: "/faq", label: "Preguntas frecuentes" },
   { href: "/sobre-nosotros", label: "Sobre Tripu" },
   { href: "/contacto", label: "Contacto" },

@@ -13,7 +13,11 @@ Una aplicación móvil para jugar cartas durante un viaje entre amigos. Cada per
 
 ### Rarezas y reparto
 
-Cada carta tiene una rareza: **común** (marco gris), **rara** (azul) o **legendaria** (dorado). Al configurar el viaje se elige cuántas legendarias recibe cada jugador (por defecto 1; nunca se repiten entre jugadores del mismo viaje) y cuántas raras y comunes completan la mano. El botón «Ajustar automáticamente» reparte el resto en un 40 % raras y 60 % comunes. Opcionalmente, el reparto de raras y comunes puede hacerse por categoría. Las raras y comunes no se repiten dentro de una mano mientras el mazo lo permita.
+Cada carta tiene una rareza: **común** (marco gris), **rara** (azul) o **legendaria** (dorado). Al configurar el viaje se elige cuántas legendarias recibe cada jugador (por defecto 1; nunca se repiten entre jugadores del mismo viaje) y cuántas raras y comunes completan la mano. Si no hay legendarias para todos, se sortean entre los jugadores y quien se quede sin una recibe 2 raras a cambio (la sustituta y una extra). El botón «Ajustar automáticamente» reparte el resto en un 40 % raras y 60 % comunes. Opcionalmente, el reparto de raras y comunes puede hacerse por categoría. Las raras y comunes no se repiten dentro de una mano mientras el mazo lo permita.
+
+### Notificaciones
+
+Cada jugador puede activar avisos push desde la página del viaje (botón «Activar»). Recibe una notificación cuando le lanzan una carta, cuando responden a la suya, cuando expira una jugada y cuando empieza el viaje. Requiere `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT`; sin ellas el botón no aparece y el juego funciona igual. En iPhone solo funciona con la app añadida a la pantalla de inicio (iOS 16.4+); la interfaz lo indica. El envío es best-effort tras confirmar cada jugada y las suscripciones caducadas se eliminan solas.
 
 ### Comunidad, sugerencias y administración
 
@@ -90,6 +94,5 @@ Se conservan los rangos y la versión exacta de Auth.js solicitados en el plan. 
 
 - Diseño visual de las cartas con imágenes o ilustraciones.
 - Reacciones encadenadas.
-- Notificaciones push.
 - Eliminación de viajes.
 - Transferencia de cartas entre jugadores.

@@ -21,7 +21,21 @@ model User {
   feedback      TripFeedback[]
   suggestions   CardSuggestion[]
   videos        CommunityVideo[]
+  pushSubscriptions PushSubscription[]
   createdAt     DateTime     @default(now())
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Account {

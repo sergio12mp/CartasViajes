@@ -36,8 +36,8 @@ export const cardTypeSchema = z.object({
   kind: z.enum(["ATTACK", "REACTION"], { message: "Elige si es ataque o reacción." }),
   category: z.string().trim().toLowerCase().regex(/^[a-z0-9-]{2,60}$/, "La categoría solo admite minúsculas, números y guiones."),
   rarity: z.enum(["COMMON", "RARE", "LEGENDARY"], { message: "Elige una rareza." }),
-  reactionEffect: z.preprocess(v => (v === "" ? null : v), z.enum(["BLOCK", "REFLECT"]).nullable()),
-  emoji: z.preprocess(v => (typeof v === "string" && v.trim() === "" ? null : v), z.string().trim().max(8, "El emoji es demasiado largo.").nullable()),
+  reactionEffect: z.preprocess(v => (v == null || v === "" ? null : v), z.enum(["BLOCK", "REFLECT"]).nullable()),
+  emoji: z.preprocess(v => (v == null || (typeof v === "string" && v.trim() === "") ? null : v), z.string().trim().max(8, "El emoji es demasiado largo.").nullable()),
   isActive: checkbox,
   sortOrder: z.coerce.number().int("Usa un orden entero.").min(0).max(10_000),
 }).superRefine((card, ctx) => {

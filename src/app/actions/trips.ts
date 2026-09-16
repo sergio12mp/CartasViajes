@@ -12,7 +12,9 @@ import { dealCards, validateDealConfig, type DealConfig, type DealRule } from "@
 import { buildEventMessage } from "@/lib/game/rules";
 import { canClaimPlayer, canManageTrip, validateRetainedPlayers } from "@/lib/game/trips";
 import { ActionError, actionResult, enforce, inTripTransaction, lockTrip, requireOne } from "@/lib/transactions";
-import { resolvePlaysInTransaction } from "@/lib/plays";
+import { expiredNotifications, resolvePlaysInTransaction } from "@/lib/plays";
+import { sendNotifications } from "@/lib/push";
+import { tripStartedNotification } from "@/lib/game/notifications";
 
 function refresh(tripId: string) {
   revalidatePath(`/trips/${tripId}`, "layout");
@@ -97,7 +99,7 @@ export async function startTrip(_previous: ActionState, form: FormData): Promise
   const parsed = idSchema.safeParse(form.get("tripId"));
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
   return actionResult(async () => {
-    await inTripTransaction(parsed.data, user.id, async (tx, trip) => {
+    const started = await inTripTransaction(parsed.data, user.id, async (tx, trip) => {
       enforce(canManageTrip(trip, user.id, "DRAFT"));
       const pool = trip.pool.map(c => ({ cardTypeId: c.cardTypeId, category: c.cardType.category, rarity: c.cardType.rarity }));
       const config = dealConfigOf(trip, trip.dealRules);
@@ -108,7 +110,9 @@ export async function startTrip(_previous: ActionState, form: FormData): Promise
       requireOne(started.count, "El viaje ya se ha iniciado.");
       await tx.playerCard.createMany({ data: cards.map(card => ({ ...card, tripId: trip.id })) });
       await tx.tripEvent.create({ data: { tripId: trip.id, type: "TRIP_STARTED", message: buildEventMessage("TRIP_STARTED", { attackerName: "", targetName: "", cardName: "" }) } });
+      return { name: trip.name, members: trip.players.map(p => p.userId).filter(id => id !== user.id) };
     });
+    await sendNotifications([{ userIds: started.members, payload: tripStartedNotification({ tripId: parsed.data, tripName: started.name }) }]);
     refresh(parsed.data);
     return { ok: true, message: "¡Viaje iniciado! Las cartas están repartidas." };
   });
@@ -121,11 +125,12 @@ export async function finishTrip(_previous: ActionState, form: FormData): Promis
     await inTripTransaction(parsed.data, user.id, async (tx, trip) => {
       enforce(canManageTrip(trip, user.id, "ACTIVE"));
       const now = new Date();
-      await resolvePlaysInTransaction(tx, trip.id, now, true);
+      const resolved = await resolvePlaysInTransaction(tx, trip.id, now, true);
       const finished = await tx.trip.updateMany({ where: { id: trip.id, status: "ACTIVE" }, data: { status: "FINISHED", finishedAt: now } });
       requireOne(finished.count, "El viaje ya ha finalizado.");
       await tx.tripEvent.create({ data: { tripId: trip.id, type: "TRIP_FINISHED", message: buildEventMessage("TRIP_FINISHED", { attackerName: "", targetName: "", cardName: "" }) } });
-    });
+      return expiredNotifications(trip.id, resolved);
+    }).then(sendNotifications);
     refresh(parsed.data);
     return { ok: true, message: "Viaje finalizado. Ya puedes consultar el resumen." };
   });

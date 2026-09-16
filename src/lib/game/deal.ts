@@ -6,6 +6,12 @@ export interface DealInput { playerIds: string[]; pool: PoolCard[]; config: Deal
 export type DealResult = { playerId: string; cardTypeId: string }[];
 export const MAX_LEGENDARIES_PER_PLAYER = 10;
 export const MAX_CARDS_PER_PLAYER = 200;
+// A player who misses a legendary gets it replaced by a rare plus one extra rare.
+export const RARES_PER_MISSING_LEGENDARY = 2;
+export function missingLegendaries(pool: PoolCard[], config: DealConfig, playerCount: number) {
+  const legendaries = pool.filter(c => c.rarity === "LEGENDARY").length;
+  return Math.max(0, playerCount * config.legendariesPerPlayer - legendaries);
+}
 const isCount = (n: number) => Number.isSafeInteger(n) && n >= 0;
 export function totalCardsPerPlayer(config: DealConfig) {
   const rest = config.dealByCategory ? config.rules.reduce((sum, r) => sum + r.cardsPerPlayer, 0) : config.raresPerPlayer + config.commonsPerPlayer;
@@ -23,10 +29,8 @@ export function validateDealConfig(pool: PoolCard[], config: DealConfig, playerC
   const total = totalCardsPerPlayer(config);
   if (total === 0) return "Reparte al menos una carta por jugador.";
   if (total > MAX_CARDS_PER_PLAYER) return `Máximo ${MAX_CARDS_PER_PLAYER} cartas por jugador.`;
-  const legendaries = pool.filter(c => c.rarity === "LEGENDARY").length;
-  const needed = playerCount * k;
-  if (legendaries < needed) return `Hay ${legendaries} cartas legendarias en el mazo y hacen falta ${needed} (${playerCount} jugadores × ${k}). Añade legendarias o reduce las legendarias por jugador.`;
   const rest = pool.filter(c => c.rarity !== "LEGENDARY");
+  if (missingLegendaries(pool, config, playerCount) > 0 && rest.length === 0) return "No hay legendarias para todos y el mazo no tiene cartas raras o comunes con las que compensar.";
   if (dealByCategory) {
     if (new Set(rules.map(r => r.category)).size !== rules.length) return "No repitas categorías en el reparto.";
     for (const rule of rules) if (!rest.some(c => c.category === rule.category)) return `No hay cartas comunes o raras seleccionadas en la categoría ${rule.category}.`;
@@ -65,12 +69,20 @@ export function dealCards({ playerIds, pool, config, rng = Math.random }: DealIn
   const k = config.legendariesPerPlayer;
   const legendaries = shuffle(pool.filter(c => c.rarity === "LEGENDARY"), rng);
   const rest = pool.filter(c => c.rarity !== "LEGENDARY");
-  playerIds.forEach((playerId, index) => {
-    for (const card of legendaries.slice(index * k, (index + 1) * k)) result.push({ playerId, cardTypeId: card.cardTypeId });
+  const rares = rest.filter(c => c.rarity === "RARE");
+  const compensation = rares.length > 0 ? rares : rest;
+  // Legendaries are handed out in a shuffled player order so nobody is systematically left without one.
+  const order = shuffle(playerIds, rng);
+  order.forEach((playerId, index) => {
+    const own = legendaries.slice(index * k, (index + 1) * k);
+    for (const card of own) result.push({ playerId, cardTypeId: card.cardTypeId });
+    const missing = k - own.length;
     const drawn = config.dealByCategory
       ? config.rules.flatMap(rule => drawN(rest.filter(c => c.category === rule.category), rule.cardsPerPlayer, rng))
-      : [...drawN(rest.filter(c => c.rarity === "RARE"), config.raresPerPlayer, rng), ...drawN(rest.filter(c => c.rarity === "COMMON"), config.commonsPerPlayer, rng)];
+      : [...drawN(rares, config.raresPerPlayer, rng), ...drawN(rest.filter(c => c.rarity === "COMMON"), config.commonsPerPlayer, rng)];
+    if (missing > 0) drawn.push(...drawN(compensation, missing * RARES_PER_MISSING_LEGENDARY, rng));
     for (const cardTypeId of drawn) result.push({ playerId, cardTypeId });
   });
-  return result;
+  const position = new Map(playerIds.map((id, i) => [id, i]));
+  return result.sort((a, b) => position.get(a.playerId)! - position.get(b.playerId)!);
 }

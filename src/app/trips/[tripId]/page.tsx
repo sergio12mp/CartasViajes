@@ -18,6 +18,7 @@ import { PoolPreview } from "@/components/PoolPreview";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { VideoSubmitForm } from "@/components/VideoSubmitForm";
 import { TikTokEmbed } from "@/components/TikTokEmbed";
+import { PushToggle } from "@/components/PushToggle";
 export const dynamic = "force-dynamic";
 export default async function TripPage({ params }: { params: Promise<{ tripId: string }> }) {
   const user = await requireUser();
@@ -39,9 +40,10 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
     <header className="space-y-3"><span className="badge">{statusLabels[trip.status]}</span><h1 className="break-words">{trip.name}</h1><div className="flex flex-wrap items-center justify-between gap-3 text-sm text-ink-soft"><span>{me ? `Juegas como ${me.displayName}` : "Elige tu nombre para jugar"} · {trip.responseWindowMinutes} min por ataque</span><Link href={`/trips/${tripId}/history`} className="font-semibold text-primary">Historial ↗</Link></div></header>
     {trip.status !== "FINISHED" && <section className="panel flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-muted">Código de embarque</p><p className="mt-2 font-mono text-3xl font-bold tracking-[0.2em]">{trip.code}</p></div><CopyButton path={`/join/${trip.code}`} /></section>}
     {!me && trip.status !== "FINISHED" && <JoinPicker tripId={tripId} code={trip.code} players={players} />}
+    {me && trip.status !== "FINISHED" && <PushToggle publicKey={process.env.VAPID_PUBLIC_KEY ?? null} />}
     {trip.status === "DRAFT" && <>
       <PlayerList players={players} />
-      <PoolPreview pool={trip.pool.map(p => p.cardType)} trip={trip} />
+      <PoolPreview pool={trip.pool.map(p => p.cardType)} trip={trip} playerCount={trip.players.length} />
       {isCreator ? <div className="flex flex-wrap gap-3"><Link className="btn-secondary" href={`/trips/${tripId}/settings`}>Editar configuración</Link><ActionForm action={startTrip} fields={{ tripId }} label="Iniciar viaje" confirmMessage="¿Iniciar el viaje y repartir las cartas? La configuración quedará cerrada." /></div> : <p className="text-center text-sm text-muted">El creador iniciará el viaje cuando estéis listos.</p>}
     </>}
     {trip.status === "ACTIVE" && board && <>

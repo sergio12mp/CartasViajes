@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dealCards, suggestSplit, totalCardsPerPlayer, validateDealConfig, type DealConfig, type PoolCard } from "./deal";
+import { dealCards, missingLegendaries, suggestSplit, totalCardsPerPlayer, validateDealConfig, type DealConfig, type PoolCard } from "./deal";
 const pool: PoolCard[] = [
   { cardTypeId: "l1", category: "roles", rarity: "LEGENDARY" }, { cardTypeId: "l2", category: "roles", rarity: "LEGENDARY" }, { cardTypeId: "l3", category: "defensa", rarity: "LEGENDARY" },
   { cardTypeId: "r1", category: "reto", rarity: "RARE" }, { cardTypeId: "r2", category: "reto", rarity: "RARE" },
@@ -49,8 +49,32 @@ describe("dealCards", () => {
     expect(dealCards({ playerIds: ["ana", "luis"], pool, config: byRarity, rng: seeded(9) })).toEqual(dealCards({ playerIds: ["ana", "luis"], pool, config: byRarity, rng: seeded(9) }));
   });
   it("returns no cards for no players", () => expect(dealCards({ playerIds: [], pool, config: byRarity })).toEqual([]));
+  it("compensates players without a legendary with two extra rares", () => {
+    const players = ["a", "b", "c", "d", "e"];
+    const cards = dealCards({ playerIds: players, pool, config: byRarity, rng: seeded(11) });
+    const hands = players.map(id => cards.filter(c => c.playerId === id).map(c => rarityOf(c.cardTypeId)));
+    const withLegendary = hands.filter(h => h.includes("LEGENDARY"));
+    const without = hands.filter(h => !h.includes("LEGENDARY"));
+    expect(withLegendary).toHaveLength(3);
+    expect(without).toHaveLength(2);
+    for (const hand of withLegendary) expect(hand).toHaveLength(5);
+    for (const hand of without) { expect(hand).toHaveLength(6); expect(hand.filter(r => r === "RARE")).toHaveLength(4); }
+    expect(new Set(cards.filter(c => rarityOf(c.cardTypeId) === "LEGENDARY").map(c => c.cardTypeId)).size).toBe(3);
+  });
+  it("compensates in category mode too and falls back to commons when there are no rares", () => {
+    const cards = dealCards({ playerIds: ["a", "b", "c", "d"], pool, config: byCategory, rng: seeded(2) });
+    expect(cards).toHaveLength(3 * 5 + 6);
+    const noRares = pool.filter(c => c.rarity !== "RARE");
+    const fallback = dealCards({ playerIds: ["a", "b", "c", "d"], pool: noRares, config: { ...byRarity, raresPerPlayer: 0 }, rng: seeded(4) });
+    expect(fallback).toHaveLength(3 * 3 + 4);
+    expect(fallback.every(c => noRares.some(p => p.cardTypeId === c.cardTypeId))).toBe(true);
+  });
+  it("keeps the output grouped in the original player order", () => {
+    const cards = dealCards({ playerIds: ["z", "a", "m"], pool, config: byRarity, rng: seeded(6) });
+    expect([...new Set(cards.map(c => c.playerId))]).toEqual(["z", "a", "m"]);
+  });
   it("rejects invalid configuration and duplicate players", () => {
-    expect(() => dealCards({ playerIds: ["a", "b", "c", "d"], pool, config: byRarity })).toThrow(/legendarias/);
+    expect(() => dealCards({ playerIds: ["a", "b"], pool: pool.filter(c => c.rarity === "LEGENDARY").slice(0, 1), config: { ...byRarity, raresPerPlayer: 0, commonsPerPlayer: 0 } })).toThrow(/compensar/);
     expect(() => dealCards({ playerIds: ["a", "a"], pool, config: byRarity })).toThrow(/repetirse/);
   });
   it.each([-0.1, 1, NaN, Infinity])("rejects invalid random value %s", rng => {
@@ -63,8 +87,10 @@ describe("validateDealConfig", () => {
     expect(validateDealConfig(pool, byCategory, 3)).toBeNull();
     expect(validateDealConfig(pool, { ...byRarity, legendariesPerPlayer: 0 }, 30)).toBeNull();
   });
-  it("explains when the pool lacks legendaries", () => {
-    expect(validateDealConfig(pool, { ...byRarity, legendariesPerPlayer: 2 }, 2)).toMatch(/Hay 3 cartas legendarias en el mazo y hacen falta 4/);
+  it("allows fewer legendaries than players and reports how many are missing", () => {
+    expect(validateDealConfig(pool, { ...byRarity, legendariesPerPlayer: 2 }, 2)).toBeNull();
+    expect(missingLegendaries(pool, { ...byRarity, legendariesPerPlayer: 2 }, 2)).toBe(1);
+    expect(missingLegendaries(pool, byRarity, 2)).toBe(0);
   });
   it.each([-1, 0.5, NaN, Infinity])("rejects invalid count %s", count => {
     expect(validateDealConfig(pool, { ...byRarity, raresPerPlayer: count }, 1)).toBeTruthy();

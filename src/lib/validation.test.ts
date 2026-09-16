@@ -35,6 +35,7 @@ it("validates catalog cards", () => {
   expect(parsed.success).toBe(true);
   if (parsed.success) expect(parsed.data).toMatchObject({ category: "reto", reactionEffect: null, emoji: null, isActive: true, sortOrder: 5 });
   expect(cardTypeSchema.safeParse({ ...card, kind: "REACTION" }).success).toBe(false);
+  expect(cardTypeSchema.safeParse({ ...card, reactionEffect: undefined, emoji: undefined }).success).toBe(true);
   expect(cardTypeSchema.safeParse({ ...card, kind: "REACTION", reactionEffect: "BLOCK" }).success).toBe(true);
   expect(cardTypeSchema.safeParse({ ...card, reactionEffect: "BLOCK" }).success).toBe(false);
   expect(cardTypeSchema.safeParse({ ...card, id: "Mal Id" }).success).toBe(false);

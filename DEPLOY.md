@@ -49,7 +49,7 @@ Usa un secreto distinto en producción. `AUTH_URL` es opcional; si lo configuras
 1. Publica los commits cuando estén revisados. Importa `sergio12mp/CartasViajes` en [Vercel](https://vercel.com/new).
 2. Framework: **Next.js**. **Root Directory: raíz del repositorio (`./`)**. Node.js: **24.x**.
 3. Build command: `npm run build`. Install command: `npm ci`.
-4. Configura `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` y `ADMIN_EMAILS` (correos con acceso a `/admin`, separados por comas) para el entorno correspondiente. Usa una base distinta en Preview si vas a probar cambios.
+4. Configura `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `ADMIN_EMAILS` (correos con acceso a `/admin`, separados por comas) y las claves de notificaciones `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (genera el par con `npx web-push generate-vapid-keys`; usa el mismo par en local y producción para no invalidar suscripciones) para el entorno correspondiente. Usa una base distinta en Preview si vas a probar cambios.
 5. Si has añadido las variables en Vercel después del primer despliegue, crea un nuevo despliegue. El `.env` de tu PC no se copia a Vercel.
 6. Despliega y sustituye `TU-APP.vercel.app` por el dominio real en Google OAuth. Para un dominio propio, registra también su origen y callback.
 7. Si cambias variables, crea un nuevo despliegue para aplicarlas.

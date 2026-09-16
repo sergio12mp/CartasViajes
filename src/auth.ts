@@ -7,6 +7,9 @@ import { prisma } from "@/lib/db";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [Google],
+  // Vercel terminates TLS before forwarding requests to the function. Auth.js
+  // must trust the canonical Vercel host when constructing OAuth callbacks.
+  trustHost: true,
   session: { strategy: "database" },
   callbacks: {
     session({ session, user }) {

@@ -50,8 +50,11 @@ Usa un secreto distinto en producción. `AUTH_URL` es opcional; si lo configuras
 2. Framework: **Next.js**. **Root Directory: raíz del repositorio (`./`)**. Node.js: **24.x**.
 3. Build command: `npm run build`. Install command: `npm ci`.
 4. Configura `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` para el entorno correspondiente. Usa una base distinta en Preview si vas a probar cambios.
-5. Despliega y sustituye `TU-APP.vercel.app` por el dominio real en Google OAuth. Para un dominio propio, registra también su origen y callback.
-6. Si cambias variables, crea un nuevo despliegue para aplicarlas.
+5. Si has añadido las variables en Vercel después del primer despliegue, crea un nuevo despliegue. El `.env` de tu PC no se copia a Vercel.
+6. Despliega y sustituye `TU-APP.vercel.app` por el dominio real en Google OAuth. Para un dominio propio, registra también su origen y callback.
+7. Si cambias variables, crea un nuevo despliegue para aplicarlas.
+
+Si `/api/auth/providers` o `/api/auth/signin/google` devuelve **500 / Server error**, abre Vercel → proyecto → **Deployments** → despliegue → **Functions / Runtime Logs**. Las causas más habituales son `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` ausentes, `DATABASE_URL` incorrecta o que todavía no se ejecutó `npm run db:push` contra la base de producción. El navegador solo muestra el mensaje genérico de Auth.js; el log identifica la variable o tabla concreta.
 
 Consulta los [ajustes de proyecto de Vercel](https://vercel.com/docs/project-configuration/general-settings) y su [documentación de variables](https://vercel.com/docs/environment-variables). No se necesitan claves de resultados deportivos ni configuración de cron.
 

@@ -4,12 +4,22 @@ Una aplicación móvil para jugar cartas durante un viaje entre amigos. Cada per
 
 ## Cómo se juega
 
-1. El creador prepara un viaje: nombre, cartas disponibles, reparto por categoría, tiempo de respuesta y entre 2 y 30 participantes.
+1. El creador prepara un viaje: nombre, cartas disponibles, reparto, tiempo de respuesta y entre 2 y 30 participantes.
 2. Comparte el enlace de invitación o el código de 6 caracteres.
 3. Cada persona entra con Google y reclama su nombre. El creador también elige el suyo.
-4. El creador inicia el viaje: todos los nombres reciben cartas, incluso quienes llegan tarde. El reparto admite cartas repetidas.
-5. Juega un ataque contra otra persona. Puede aceptarlo, bloquearlo con Escudo o devolverlo con Boomerang. Las cartas utilizadas quedan bloqueadas; no hay reacciones encadenadas.
-6. Sigue la actividad y el historial. Al finalizar el viaje, los ataques pendientes se aplican y aparece el resumen de quién recibió más cartas.
+4. El creador inicia el viaje: todos los nombres reciben cartas, incluso quienes llegan tarde.
+5. Juega un ataque contra otra persona. Puede aceptarlo, bloquearlo con Escudo o devolverlo con Rebote. Las cartas jugadas quedan marcadas como usadas; no hay reacciones encadenadas.
+6. Sigue la actividad y el historial. Al finalizar el viaje, los ataques pendientes se aplican, aparece el resumen de quién recibió más cartas y cada jugador puede valorar el viaje y compartir un TikTok.
+
+### Rarezas y reparto
+
+Cada carta tiene una rareza: **común** (marco gris), **rara** (azul) o **legendaria** (dorado). Al configurar el viaje se elige cuántas legendarias recibe cada jugador (por defecto 1; nunca se repiten entre jugadores del mismo viaje) y cuántas raras y comunes completan la mano. El botón «Ajustar automáticamente» reparte el resto en un 40 % raras y 60 % comunes. Opcionalmente, el reparto de raras y comunes puede hacerse por categoría. Las raras y comunes no se repiten dentro de una mano mientras el mazo lo permita.
+
+### Comunidad, sugerencias y administración
+
+- `/comunidad` muestra TikToks aprobados de gente jugando; cualquier usuario puede enviar un enlace, opcionalmente asociado a un viaje y un destino.
+- `/sugerencias` recoge propuestas de cartas nuevas.
+- `/admin` (solo para los correos de `ADMIN_EMAILS`) permite crear, editar y retirar cartas, aprobar vídeos, leer valoraciones y sugerencias, y ver qué cartas se juegan más y con qué respuesta.
 
 La ventana de respuesta es de 1 a 120 minutos. Al llegar al vencimiento, el ataque se considera aceptado. El servidor materializa las expiraciones al cargar el viaje o el historial, o al ejecutar una acción de juego. Las páginas se actualizan cada 5 segundos mientras están visibles. Sin visitas no se ejecuta ningún temporizador de servidor.
 
@@ -34,12 +44,12 @@ En PowerShell, puedes usar `Copy-Item .env.example .env`. Abre http://localhost:
 
 ## Añadir o retirar una carta
 
-Edita [prisma/card-catalog.ts](prisma/card-catalog.ts) y ejecuta `npm run db:seed`.
+Desde `/admin/cards` (recomendado) o editando [prisma/card-catalog.ts](prisma/card-catalog.ts) y ejecutando `npm run db:seed`.
 
-- Usa un `id` estable y único, nombre, descripción, categoría, `kind` y `sortOrder`.
+- Usa un `id` estable y único, nombre, descripción, categoría, `kind`, `rarity` y `sortOrder`.
 - En una reacción añade `reactionEffect: "BLOCK"` o `"REFLECT"`.
-- `emoji` y `color` quedan disponibles para el diseño posterior.
-- El seed actualiza por `id`, reactiva las cartas presentes y desactiva las retiradas. No borra cartas ni manos históricas.
+- El seed actualiza por `id` y reactiva las cartas del catálogo base; no toca las cartas creadas desde el panel ni borra manos históricas. Si editas una carta base en el panel, refleja el cambio en el catálogo o el siguiente seed lo sobrescribirá.
+- Retirar una carta la oculta en viajes nuevos; las manos ya repartidas la conservan.
 - Los textos de los tipos se consultan desde el catálogo; editar su nombre o descripción también cambia cómo se muestran en manos e historial. Los mensajes del diario conservan el texto original.
 
 ## Verificación
@@ -81,6 +91,5 @@ Se conservan los rangos y la versión exacta de Auth.js solicitados en el plan. 
 - Diseño visual de las cartas con imágenes o ilustraciones.
 - Reacciones encadenadas.
 - Notificaciones push.
-- Administración visual del catálogo.
 - Eliminación de viajes.
 - Transferencia de cartas entre jugadores.

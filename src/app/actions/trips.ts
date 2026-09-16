@@ -8,7 +8,7 @@ import { requireUser } from "@/lib/session";
 import type { ActionState } from "@/lib/action-state";
 import { idSchema, parseTripForm, type TripInput } from "@/lib/validation";
 import { createTripWithUniqueCode } from "@/lib/codes";
-import { dealCards, validateDealConfig } from "@/lib/game/deal";
+import { dealCards, validateDealConfig, type DealConfig, type DealRule } from "@/lib/game/deal";
 import { buildEventMessage } from "@/lib/game/rules";
 import { canClaimPlayer, canManageTrip, validateRetainedPlayers } from "@/lib/game/trips";
 import { ActionError, actionResult, enforce, inTripTransaction, lockTrip, requireOne } from "@/lib/transactions";
@@ -18,14 +18,19 @@ function refresh(tripId: string) {
   revalidatePath(`/trips/${tripId}`, "layout");
   revalidatePath("/");
 }
+function dealConfigOf(trip: { legendariesPerPlayer: number; raresPerPlayer: number; commonsPerPlayer: number; dealByCategory: boolean }, rules: DealRule[]): DealConfig {
+  return { legendariesPerPlayer: trip.legendariesPerPlayer, raresPerPlayer: trip.raresPerPlayer, commonsPerPlayer: trip.commonsPerPlayer, dealByCategory: trip.dealByCategory, rules };
+}
 async function validatedConfig(tx: Prisma.TransactionClient, input: TripInput) {
   const ids = [...new Set(input.poolCardTypeIds)];
   const cards = await tx.cardType.findMany({ where: { id: { in: ids }, isActive: true } });
   if (cards.length !== ids.length) throw new ActionError("Alguna carta ya no está disponible. Revisa la selección.");
-  const rules = Object.entries(input.dealRules).map(([category, cardsPerPlayer]) => ({ category, cardsPerPlayer }));
-  const message = validateDealConfig(cards.map(c => ({ cardTypeId: c.id, category: c.category })), rules);
+  const rules = input.dealByCategory ? Object.entries(input.dealRules ?? {}).map(([category, cardsPerPlayer]) => ({ category, cardsPerPlayer })) : [];
+  const config = dealConfigOf(input, rules);
+  const message = validateDealConfig(cards.map(c => ({ cardTypeId: c.id, category: c.category, rarity: c.rarity })), config, input.playerNames.length);
   if (message) throw new ActionError(message);
-  return { pool: ids.map(cardTypeId => ({ cardTypeId })), rules };
+  const settings = { legendariesPerPlayer: input.legendariesPerPlayer, raresPerPlayer: input.raresPerPlayer, commonsPerPlayer: input.commonsPerPlayer, dealByCategory: input.dealByCategory };
+  return { pool: ids.map(cardTypeId => ({ cardTypeId })), rules, settings };
 }
 export async function createTrip(_previous: ActionState, form: FormData): Promise<ActionState> {
   const user = await requireUser();
@@ -33,9 +38,9 @@ export async function createTrip(_previous: ActionState, form: FormData): Promis
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
   return actionResult(async () => {
     const trip = await createTripWithUniqueCode(code => prisma.$transaction(async tx => {
-      const { pool, rules } = await validatedConfig(tx, parsed.data);
+      const { pool, rules, settings } = await validatedConfig(tx, parsed.data);
       return tx.trip.create({ data: {
-        name: parsed.data.name, responseWindowMinutes: parsed.data.responseWindowMinutes, creatorId: user.id, code,
+        name: parsed.data.name, responseWindowMinutes: parsed.data.responseWindowMinutes, creatorId: user.id, code, ...settings,
         pool: { create: pool }, dealRules: { create: rules }, players: { create: parsed.data.playerNames.map(displayName => ({ displayName })) },
       } });
     }));
@@ -53,13 +58,13 @@ export async function updateTripSettings(_previous: ActionState, form: FormData)
     await inTripTransaction(id.data, user.id, async (tx, trip) => {
       enforce(canManageTrip(trip, user.id, "DRAFT"));
       enforce(validateRetainedPlayers(trip.players, parsed.data.playerNames));
-      const { pool, rules } = await validatedConfig(tx, parsed.data);
+      const { pool, rules, settings } = await validatedConfig(tx, parsed.data);
       await tx.tripPoolCard.deleteMany({ where: { tripId: trip.id } });
       await tx.tripDealRule.deleteMany({ where: { tripId: trip.id } });
       // Preserve retained IDs, especially claimed slots, across settings edits.
       await tx.tripPlayer.deleteMany({ where: { tripId: trip.id, userId: null, displayName: { notIn: parsed.data.playerNames } } });
       const added = parsed.data.playerNames.filter(name => !trip.players.some(p => p.displayName === name));
-      await tx.trip.update({ where: { id: trip.id }, data: { name: parsed.data.name, responseWindowMinutes: parsed.data.responseWindowMinutes,
+      await tx.trip.update({ where: { id: trip.id }, data: { name: parsed.data.name, responseWindowMinutes: parsed.data.responseWindowMinutes, ...settings,
         pool: { create: pool }, dealRules: { create: rules }, players: { create: added.map(displayName => ({ displayName })) },
       } });
     });
@@ -94,10 +99,11 @@ export async function startTrip(_previous: ActionState, form: FormData): Promise
   return actionResult(async () => {
     await inTripTransaction(parsed.data, user.id, async (tx, trip) => {
       enforce(canManageTrip(trip, user.id, "DRAFT"));
-      const pool = trip.pool.map(c => ({ cardTypeId: c.cardTypeId, category: c.cardType.category }));
-      const message = validateDealConfig(pool, trip.dealRules);
+      const pool = trip.pool.map(c => ({ cardTypeId: c.cardTypeId, category: c.cardType.category, rarity: c.cardType.rarity }));
+      const config = dealConfigOf(trip, trip.dealRules);
+      const message = validateDealConfig(pool, config, trip.players.length);
       if (message) throw new ActionError(message);
-      const cards = dealCards({ playerIds: trip.players.map(p => p.id), pool, rules: trip.dealRules });
+      const cards = dealCards({ playerIds: trip.players.map(p => p.id), pool, config });
       const started = await tx.trip.updateMany({ where: { id: trip.id, status: "DRAFT" }, data: { status: "ACTIVE", startedAt: new Date() } });
       requireOne(started.count, "El viaje ya se ha iniciado.");
       await tx.playerCard.createMany({ data: cards.map(card => ({ ...card, tripId: trip.id })) });

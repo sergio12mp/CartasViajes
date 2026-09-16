@@ -16,9 +16,9 @@ El esquema usa `url` y `directUrl` según el patrón de [Prisma 6 con Neon](http
 ## 2. Google OAuth
 
 1. En [Google Cloud Console](https://console.cloud.google.com/), crea el proyecto **CartasViajes**.
-2. Configura la pantalla de consentimiento/Google Auth Platform: nombre de aplicación, correo de soporte y audiencia externa.
-3. Mientras esté en pruebas, añade tus correos y los de los amigos como **test users**. Para abrir el acceso, publica la aplicación OAuth y completa los requisitos que indique Google.
-4. Crea un cliente OAuth de tipo **aplicación web**.
+2. En **Google Auth Platform → Información de marca**, rellena nombre de aplicación y correo de asistencia. Logo, dominios y enlaces son opcionales.
+3. En **Google Auth Platform → Público**, elige **Externo** y, mientras esté en pruebas, añade tus correos y los de los amigos como **test users**. Para abrir el acceso, publica la aplicación OAuth y completa los requisitos que indique Google.
+4. En **Google Auth Platform → Clientes**, crea un cliente OAuth de tipo **aplicación web**.
 5. Añade los orígenes autorizados:
    - `http://localhost:3000`
    - `https://TU-APP.vercel.app`
@@ -49,7 +49,7 @@ Usa un secreto distinto en producción. `AUTH_URL` es opcional; si lo configuras
 1. Publica los commits cuando estén revisados. Importa `sergio12mp/CartasViajes` en [Vercel](https://vercel.com/new).
 2. Framework: **Next.js**. **Root Directory: raíz del repositorio (`./`)**. Node.js: **24.x**.
 3. Build command: `npm run build`. Install command: `npm ci`.
-4. Configura `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` para el entorno correspondiente. Usa una base distinta en Preview si vas a probar cambios.
+4. Configura `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` y `ADMIN_EMAILS` (correos con acceso a `/admin`, separados por comas) para el entorno correspondiente. Usa una base distinta en Preview si vas a probar cambios.
 5. Si has añadido las variables en Vercel después del primer despliegue, crea un nuevo despliegue. El `.env` de tu PC no se copia a Vercel.
 6. Despliega y sustituye `TU-APP.vercel.app` por el dominio real en Google OAuth. Para un dominio propio, registra también su origen y callback.
 7. Si cambias variables, crea un nuevo despliegue para aplicarlas.

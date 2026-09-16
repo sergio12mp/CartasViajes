@@ -18,6 +18,9 @@ model User {
   sessions      Session[]
   trips         Trip[]
   players       TripPlayer[]
+  feedback      TripFeedback[]
+  suggestions   CardSuggestion[]
+  videos        CommunityVideo[]
   createdAt     DateTime     @default(now())
 }
 
@@ -94,12 +97,34 @@ enum EventType {
   PLAYER_JOINED
 }
 
+enum Rarity {
+  COMMON
+  RARE
+  LEGENDARY
+}
+
+enum SuggestionStatus {
+  NEW
+  REVIEWED
+}
+
+enum VideoPlatform {
+  TIKTOK
+}
+
+enum VideoStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model CardType {
   id             String          @id
   name           String
   description    String
   kind           CardKind
   category       String
+  rarity         Rarity          @default(COMMON)
   reactionEffect ReactionEffect?
   emoji          String?
   color          String?
@@ -107,6 +132,7 @@ model CardType {
   sortOrder      Int             @default(0)
   pools          TripPoolCard[]
   cards          PlayerCard[]
+  favorites      TripFeedback[]
 }
 
 model Trip {
@@ -115,6 +141,10 @@ model Trip {
   code                  String         @unique
   status                TripStatus     @default(DRAFT)
   responseWindowMinutes Int            @default(10)
+  legendariesPerPlayer  Int            @default(1)
+  raresPerPlayer        Int            @default(0)
+  commonsPerPlayer      Int            @default(0)
+  dealByCategory        Boolean        @default(true)
   creatorId             String
   creator               User           @relation(fields: [creatorId], references: [id])
   createdAt             DateTime       @default(now())
@@ -126,6 +156,56 @@ model Trip {
   cards                 PlayerCard[]
   plays                 Play[]
   events                TripEvent[]
+  feedback              TripFeedback[]
+  videos                CommunityVideo[]
+}
+
+model TripFeedback {
+  id                 String    @id @default(cuid())
+  tripId             String
+  userId             String
+  rating             Int
+  favoriteCardTypeId String?
+  comment            String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  trip               Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  favoriteCard       CardType? @relation(fields: [favoriteCardTypeId], references: [id])
+
+  @@unique([tripId, userId])
+}
+
+model CardSuggestion {
+  id          String           @id @default(cuid())
+  userId      String
+  name        String
+  description String
+  category    String
+  comment     String?
+  status      SuggestionStatus @default(NEW)
+  createdAt   DateTime         @default(now())
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+}
+
+model CommunityVideo {
+  id                String        @id @default(cuid())
+  url               String        @unique
+  videoId           String
+  platform          VideoPlatform @default(TIKTOK)
+  title             String?
+  destination       String?
+  tripId            String?
+  submittedByUserId String
+  status            VideoStatus   @default(PENDING)
+  createdAt         DateTime      @default(now())
+  reviewedAt        DateTime?
+  trip              Trip?         @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  submittedBy       User          @relation(fields: [submittedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
 }
 
 model TripPoolCard {

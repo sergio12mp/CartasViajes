@@ -35,6 +35,9 @@ export async function getTripBoard(tripId: string, playerId: string | null, user
     locked: counts.find(c => c.playerId === p.id && c.status === "LOCKED")?._count ?? 0,
   })) };
 }
+export async function getTripFeedbackForUser(tripId: string, userId: string) {
+  return prisma.tripFeedback.findUnique({ where: { tripId_userId: { tripId, userId } } });
+}
 export async function getTripHistory(tripId: string, userId: string) {
   if (!await getTripForUser(tripId, userId)) return null;
   return prisma.play.findMany({ where: { tripId }, include: { ...playInclude, events: { select: { type: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });

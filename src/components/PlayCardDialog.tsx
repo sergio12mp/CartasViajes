@@ -15,7 +15,7 @@ export function PlayCardDialog({ card, tripId, targets, onClose }: { card: HandC
     <p className="mb-5 text-sm text-ink-soft">{card.cardType.description}</p>
     <form action={action} className="space-y-4"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="cardId" value={card.id} />
       <label className="block space-y-2"><span>¿A quién se la juegas?</span><select name="targetPlayerId" required defaultValue=""><option value="" disabled>Elige un objetivo</option>{targets.map(p => <option key={p.id} value={p.id}>{p.displayName}</option>)}</select></label>
-      <p className="text-xs text-muted">La carta quedará bloqueada en cuanto la juegues.</p>
+      <p className="text-xs text-muted">La carta quedará marcada como usada en cuanto la juegues.</p>
       {state.message && <p role="status" className={state.ok ? "text-success" : "text-danger"}>{state.message}</p>}
       <button className="btn w-full" disabled={pending}>{pending ? "Jugando…" : "Jugar carta"}</button>
     </form>

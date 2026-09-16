@@ -11,6 +11,9 @@
   --color-success: #24734f;
   --color-danger: #b12b35;
   --color-warning: #9c640c;
+  --color-rarity-common: #9a9a9a;
+  --color-rarity-rare: #2f6fd6;
+  --color-rarity-legendary: #d4a017;
   --font-sans: ui-sans-serif, system-ui, sans-serif;
 }
 @layer base {
@@ -29,4 +32,11 @@
   .btn-secondary { @apply inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold; }
   .panel { @apply rounded-2xl border border-border bg-surface p-5; }
   .badge { @apply inline-flex rounded-full bg-bg px-3 py-1 text-xs font-semibold; }
+  .card-common { @apply border-2 border-rarity-common; }
+  .card-rare { @apply border-2 border-rarity-rare; }
+  .card-legendary { @apply border-2 border-rarity-legendary shadow-[0_0_0_3px_rgba(212,160,23,0.25)]; }
+  .badge-common { @apply inline-flex rounded-full bg-rarity-common/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rarity-common; }
+  .badge-rare { @apply inline-flex rounded-full bg-rarity-rare/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rarity-rare; }
+  .badge-legendary { @apply inline-flex rounded-full bg-rarity-legendary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rarity-legendary; }
+  .nav-link { @apply whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold text-ink-soft hover:bg-bg hover:text-ink; }
 }

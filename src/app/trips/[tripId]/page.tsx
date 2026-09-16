@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
-import { getTripBoard, getTripForUser, getTripHistory } from "@/lib/trips";
+import { getTripBoard, getTripFeedbackForUser, getTripForUser, getTripHistory } from "@/lib/trips";
+import { getVideosForTrip } from "@/lib/videos";
 import { resolveExpiredPlays } from "@/lib/plays";
 import { startTrip, finishTrip } from "@/app/actions/trips";
 import { AutoRefresh } from "@/components/AutoRefresh";
@@ -13,6 +14,10 @@ import { Hand } from "@/components/Hand";
 import { PendingPlays } from "@/components/PendingPlays";
 import { EventFeed } from "@/components/EventFeed";
 import { statusLabels } from "@/components/TripCard";
+import { PoolPreview } from "@/components/PoolPreview";
+import { FeedbackForm } from "@/components/FeedbackForm";
+import { VideoSubmitForm } from "@/components/VideoSubmitForm";
+import { TikTokEmbed } from "@/components/TikTokEmbed";
 export const dynamic = "force-dynamic";
 export default async function TripPage({ params }: { params: Promise<{ tripId: string }> }) {
   const user = await requireUser();
@@ -26,6 +31,7 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
   const players = trip.players.map(p => ({ id: p.id, displayName: p.displayName, claimed: Boolean(p.userId), image: p.user?.image }));
   const board = trip.status === "ACTIVE" ? await getTripBoard(tripId, me?.id ?? null, user.id) : null;
   const history = trip.status === "FINISHED" ? await getTripHistory(tripId, user.id) : null;
+  const [feedback, videos] = trip.status === "FINISHED" ? await Promise.all([getTripFeedbackForUser(tripId, user.id), getVideosForTrip(tripId)]) : [null, []];
   const ranking = history ? players.map(player => ({ ...player, received: history.filter(play => play.finalTargetId === player.id).length })).sort((a, b) => b.received - a.received || a.displayName.localeCompare(b.displayName, "es")) : [];
   return <div className="space-y-7">
     {trip.status !== "FINISHED" && <AutoRefresh />}
@@ -35,10 +41,7 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
     {!me && trip.status !== "FINISHED" && <JoinPicker tripId={tripId} code={trip.code} players={players} />}
     {trip.status === "DRAFT" && <>
       <PlayerList players={players} />
-      <section className="panel space-y-4"><h2>Así se juega este viaje</h2><p className="text-sm text-ink-soft">Cada participante recibe {trip.dealRules.reduce((sum, rule) => sum + rule.cardsPerPlayer, 0)} cartas. También repartiremos a quienes aún no hayan entrado.</p>
-        <ul className="flex flex-wrap gap-2">{trip.dealRules.map(rule => <li key={rule.category} className="badge capitalize">{rule.category}: {rule.cardsPerPlayer}</li>)}</ul>
-        <details><summary className="cursor-pointer text-sm font-semibold">Ver los {trip.pool.length} tipos de carta</summary><ul className="mt-3 space-y-2 text-sm">{trip.pool.map(p => <li key={p.cardTypeId}>{p.cardType.emoji} {p.cardType.name}</li>)}</ul></details>
-      </section>
+      <PoolPreview pool={trip.pool.map(p => p.cardType)} trip={trip} />
       {isCreator ? <div className="flex flex-wrap gap-3"><Link className="btn-secondary" href={`/trips/${tripId}/settings`}>Editar configuración</Link><ActionForm action={startTrip} fields={{ tripId }} label="Iniciar viaje" confirmMessage="¿Iniciar el viaje y repartir las cartas? La configuración quedará cerrada." /></div> : <p className="text-center text-sm text-muted">El creador iniciará el viaje cuando estéis listos.</p>}
     </>}
     {trip.status === "ACTIVE" && board && <>
@@ -49,7 +52,10 @@ export default async function TripPage({ params }: { params: Promise<{ tripId: s
     </>}
     {trip.status === "FINISHED" && <>
       <section className="panel space-y-4"><p className="text-4xl" aria-hidden>🏁</p><h2>Un viaje para recordar</h2><p className="text-ink-soft">{history?.length ?? 0} jugadas y muchas historias.</p><Link href={`/trips/${tripId}/history`} className="btn">Ver el historial completo</Link></section>
-      <section className="panel space-y-4"><h2>Quien más cartas ha sufrido</h2><ol className="space-y-3">{ranking.map((p, i) => <li key={p.id} className="flex justify-between gap-3 border-b border-border pb-3 text-sm"><span>{i + 1}. {p.displayName}</span><strong>{p.received} cartas</strong></li>)}</ol><p className="text-xs text-muted">Los ataques devueltos cuentan para quien los lanzó. Los bloqueados no cuentan.</p></section>
+      <section className="panel space-y-4"><h2>Quien más cartas ha sufrido</h2><ol className="space-y-3">{ranking.map((p, i) => <li key={p.id} className="flex justify-between gap-3 border-b border-border pb-3 text-sm"><span>{i + 1}. {p.displayName}</span><strong>{p.received} cartas</strong></li>)}</ol><p className="text-xs text-muted">Los ataques devueltos cuentan para quien los lanzó. Los bloqueados con Escudo no cuentan.</p></section>
+      <section className="panel space-y-4"><div><h2>¿Qué tal ha ido?</h2><p className="mt-1 text-sm text-ink-soft">Tu valoración nos ayuda a ajustar las cartas para los próximos viajes.</p></div><FeedbackForm tripId={tripId} pool={trip.pool.map(p => ({ id: p.cardTypeId, name: p.cardType.name, emoji: p.cardType.emoji }))} existing={feedback} /></section>
+      <section className="panel space-y-4"><div><h2>¿Grabasteis un TikTok?</h2><p className="mt-1 text-sm text-ink-soft">Compártelo con la comunidad; quedará enlazado a este viaje.</p></div><VideoSubmitForm tripId={tripId} /></section>
+      {videos.length > 0 && <section className="space-y-4"><h2>Vídeos de este viaje</h2><div className="grid gap-6 sm:grid-cols-2">{videos.map(video => <article key={video.id} className="panel space-y-2"><TikTokEmbed url={video.url} videoId={video.videoId} title={video.title} /><p className="text-sm text-ink-soft">{video.title ?? "Sin título"}{video.destination && ` · ${video.destination}`}</p></article>)}</div></section>}
     </>}
   </div>;
 }

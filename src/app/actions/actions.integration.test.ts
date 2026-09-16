@@ -21,7 +21,7 @@ describe.skipIf(!enabled)("PostgreSQL action integration", () => {
     for (const [key, value] of Object.entries(values)) for (const item of Array.isArray(value) ? value : [value]) data.append(key, item);
     return data;
   }
-  const config = { name: prefix, responseWindowMinutes: "2", "poolCardTypeIds[]": cardIds, dealRules: JSON.stringify({ attack: 5, block: 1, reflect: 1 }), "playerNames[]": ["Ana", "Luis", "Tarde"] };
+  const config = { name: prefix, responseWindowMinutes: "2", "poolCardTypeIds[]": cardIds, legendariesPerPlayer: "0", dealByCategory: "on", dealRules: JSON.stringify({ attack: 5, block: 1, reflect: 1 }), "playerNames[]": ["Ana", "Luis", "Tarde"] };
   beforeAll(async () => {
     await prisma.user.createMany({ data: userIds.map(id => ({ id, name: "Integration test" })) });
     await prisma.cardType.createMany({ data: [

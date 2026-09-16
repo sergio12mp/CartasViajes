@@ -2,13 +2,22 @@
 // Never infer an operator's identity from OAuth credentials or administrator emails.
 export const siteOperator: {
   name: string | null;
+  country: string;
   taxId: string | null;
   address: string | null;
   email: string | null;
   registry: string | null;
-} = { name: null, taxId: null, address: null, email: null, registry: null };
+} = {
+  name: "Sergio Morejon Perez",
+  country: "España",
+  taxId: null,
+  address: null,
+  email: "softwaresergiom@gmail.com",
+  registry: null,
+};
 
-export const legalDetailsComplete = Boolean(siteOperator.name && siteOperator.taxId && siteOperator.address && siteOperator.email);
+// Confirm retention, processing bases, providers and any commercial terms before enabling indexing.
+export const legalContentReviewed = false;
 export const legalReviewDate = "16 de septiembre de 2026";
 export const informationLinks = [
   { href: "/faq", label: "Preguntas frecuentes" },

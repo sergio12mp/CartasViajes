@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InfoPage, InfoSection } from "@/components/InfoPage";
-import { legalDetailsComplete } from "@/lib/site-info";
-export const metadata: Metadata = { title: "Cookies", description: "Cookies de acceso y seguridad, vídeos externos y controles de privacidad en Tripu.", robots: { index: legalDetailsComplete, follow: true } };
+import { legalContentReviewed } from "@/lib/site-info";
+export const metadata: Metadata = { title: "Cookies", description: "Cookies de acceso y seguridad, vídeos externos y controles de privacidad en Tripu.", robots: { index: legalContentReviewed, follow: true } };
 const cookies = [
   ["authjs.session-token", "Mantiene tu sesión iniciada.", "Hasta 30 días; se puede renovar con la actividad."],
   ["authjs.callback-url", "Recuerda adónde volver tras identificarte.", "Sesión del navegador."],

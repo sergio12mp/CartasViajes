@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { legalDetailsComplete, legalReviewDate, siteOperator } from "@/lib/site-info";
+import { legalContentReviewed, legalReviewDate, siteOperator } from "@/lib/site-info";
 
 export function InfoPage({ eyebrow, title, intro, legal = false, children }: {
   eyebrow: string; title: string; intro: string; legal?: boolean; children: ReactNode;
@@ -12,7 +12,7 @@ export function InfoPage({ eyebrow, title, intro, legal = false, children }: {
       <p className="max-w-xl text-base leading-relaxed text-ink-soft">{intro}</p>
       {legal && <p className="text-xs text-muted">Última revisión: {legalReviewDate}</p>}
     </header>
-    {legal && !legalDetailsComplete && <aside className="rounded-2xl border border-warning/30 bg-accent/10 p-4 text-sm leading-relaxed text-ink-soft"><p className="font-semibold text-ink">Información legal en preparación</p><p className="mt-1">Falta publicar la identificación y el contacto del titular. Este texto describe el servicio actual y deberá completarse con esos datos.</p></aside>}
+    {legal && !legalContentReviewed && <aside className="rounded-2xl border border-warning/30 bg-accent/10 p-4 text-sm leading-relaxed text-ink-soft"><p className="font-semibold text-ink">Información legal en revisión</p><p className="mt-1">El titular y su contacto están publicados. Queda por concretar la conservación de datos, las bases de algunos tratamientos y las garantías de los proveedores. Las condiciones de contratación deberán completarse antes de comercializar packs.</p></aside>}
     {children}
   </article>;
 }

@@ -12,7 +12,7 @@ export function InfoPage({ eyebrow, title, intro, legal = false, children }: {
       <p className="max-w-xl text-base leading-relaxed text-ink-soft">{intro}</p>
       {legal && <p className="text-xs text-muted">Última revisión: {legalReviewDate}</p>}
     </header>
-    {legal && !legalContentReviewed && <aside className="rounded-2xl border border-warning/30 bg-accent/10 p-4 text-sm leading-relaxed text-ink-soft"><p className="font-semibold text-ink">Información legal en revisión</p><p className="mt-1">El titular y su contacto están publicados. Queda por concretar la conservación de datos, las bases de algunos tratamientos y las garantías de los proveedores. Las condiciones de contratación deberán completarse antes de comercializar packs.</p></aside>}
+    {legal && !legalContentReviewed && <p className="text-sm text-muted">Información en revisión. <Link href="/privacidad#revision" className="text-primary underline underline-offset-4">Consulta los puntos pendientes de privacidad.</Link></p>}
     {children}
   </article>;
 }

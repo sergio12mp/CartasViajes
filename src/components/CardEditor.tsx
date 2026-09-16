@@ -7,7 +7,7 @@ import { rarityLabels, type RarityKey } from "@/lib/game/rarity";
 import { StateForm } from "./StateForm";
 const textarea = "w-full rounded-xl border border-border bg-surface px-3 py-3";
 export type CardDraft = { name?: string; description?: string; category?: string; creditName?: string | null; suggestionId?: string | null };
-export function CardEditor({ card, categories, packs, draft }: { card?: CardType; categories: string[]; packs: CardPack[]; draft?: CardDraft }) {
+export function CardEditor({ card, categories, packs, packIds = [], draft }: { card?: CardType; categories: string[]; packs: CardPack[]; packIds?: string[]; draft?: CardDraft }) {
   const [kind, setKind] = useState<"ATTACK" | "REACTION">(card?.kind ?? "ATTACK");
   const [id, setId] = useState(card?.id ?? slugify(draft?.name ?? ""));
   const [idTouched, setIdTouched] = useState(Boolean(card));
@@ -29,10 +29,8 @@ export function CardEditor({ card, categories, packs, draft }: { card?: CardType
       <label className="block space-y-2"><span>Emoji</span><input name="emoji" maxLength={8} defaultValue={card?.emoji ?? ""} placeholder="🎤" /></label>
       <label className="block space-y-2"><span>Orden</span><input name="sortOrder" type="number" min={0} max={10000} defaultValue={card?.sortOrder ?? 100} /></label>
     </div>
-    <div className="grid gap-4 sm:grid-cols-2">
-      <label className="block space-y-2"><span>Pack</span><select name="packId" defaultValue={card?.packId ?? ""}><option value="">Catálogo base (gratis)</option>{packs.map(p => <option key={p.id} value={p.id}>{p.emoji} {p.name}{p.isPremium ? " · premium" : ""}</option>)}</select></label>
-      <label className="block space-y-2"><span>Crédito (propuesta por)</span><input name="creditName" maxLength={40} defaultValue={card?.creditName ?? draft?.creditName ?? ""} placeholder="Nombre de quien la propuso" /></label>
-    </div>
+    <fieldset className="space-y-2"><legend className="text-sm font-medium">Packs en los que aparece</legend><div className="flex flex-wrap gap-3">{packs.map(p => <label key={p.id} className="flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm"><input type="checkbox" name="packIds[]" value={p.id} defaultChecked={packIds.includes(p.id)} />{p.emoji} {p.name}{p.isPremium && <span className="text-xs text-muted">· premium</span>}</label>)}</div><p className="text-xs text-muted">Sin ningún pack, la carta solo aparece en el modo manual y es gratis.</p></fieldset>
+    <label className="block space-y-2"><span>Crédito (propuesta por)</span><input name="creditName" maxLength={40} defaultValue={card?.creditName ?? draft?.creditName ?? ""} placeholder="Nombre de quien la propuso" /></label>
     <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked={card?.isActive ?? true} />Disponible para nuevos viajes</label>
   </StateForm>;
 }

@@ -20,10 +20,16 @@ export function PackEditor({ pack }: { pack?: CardPack }) {
       <label className="block space-y-2"><span>Precio para siempre (€)</span><input name="priceLifetimeCents" type="number" step="0.01" min={0} max={500} defaultValue={pack ? (pack.priceLifetimeCents / 100).toFixed(2) : "4.99"} /></label>
       <label className="block space-y-2"><span>Orden</span><input name="sortOrder" type="number" min={0} max={10000} defaultValue={pack?.sortOrder ?? 100} /></label>
     </div>
+    <div className="grid gap-4 sm:grid-cols-4">
+      <label className="block space-y-2"><span>Legendarias/jugador</span><input name="legendariesPerPlayer" type="number" min={0} max={10} defaultValue={pack?.legendariesPerPlayer ?? 1} /></label>
+      <label className="block space-y-2"><span>Raras/jugador</span><input name="raresPerPlayer" type="number" min={0} max={100} defaultValue={pack?.raresPerPlayer ?? 2} /></label>
+      <label className="block space-y-2"><span>Comunes/jugador</span><input name="commonsPerPlayer" type="number" min={0} max={100} defaultValue={pack?.commonsPerPlayer ?? 2} /></label>
+      <label className="block space-y-2"><span>Minutos de respuesta</span><input name="responseWindowMinutes" type="number" min={1} max={120} defaultValue={pack?.responseWindowMinutes ?? 10} /></label>
+    </div>
     <div className="flex flex-wrap gap-4">
       <label className="flex items-center gap-2"><input type="checkbox" name="isPremium" defaultChecked={pack?.isPremium ?? true} />De pago</label>
       <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked={pack?.isActive ?? true} />Visible en la creación de viajes</label>
     </div>
-    <p className="text-xs text-muted">Un precio a 0 desactiva esa modalidad. Asigna cartas al pack desde el editor de cada carta.</p>
+    <p className="text-xs text-muted">Un precio a 0 desactiva esa modalidad. El reparto es el que se propone al elegir el pack; el creador puede retocarlo. Asigna cartas al pack desde el editor de cada carta.</p>
   </StateForm>;
 }

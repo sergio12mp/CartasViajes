@@ -1,8 +1,9 @@
 import { prisma } from "./db";
+export const cardPacksInclude = { packs: { include: { pack: true }, orderBy: { pack: { sortOrder: "asc" as const } } } };
 export async function getActiveCardTypes() {
-  return prisma.cardType.findMany({ where: { isActive: true, OR: [{ packId: null }, { pack: { isActive: true } }] }, include: { pack: true }, orderBy: [{ category: "asc" }, { sortOrder: "asc" }] });
+  return prisma.cardType.findMany({ where: { isActive: true }, include: cardPacksInclude, orderBy: [{ category: "asc" }, { sortOrder: "asc" }] });
 }
-export type CardTypeWithPack = Awaited<ReturnType<typeof getActiveCardTypes>>[number];
+export type CardTypeWithPacks = Awaited<ReturnType<typeof getActiveCardTypes>>[number];
 export async function getCommunityCardTypes() {
   return prisma.cardType.findMany({ where: { isActive: true, creditName: { not: null } }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
 }

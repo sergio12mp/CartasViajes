@@ -27,15 +27,16 @@ function dealConfigOf(trip: { legendariesPerPlayer: number; raresPerPlayer: numb
 }
 async function validatedConfig(tx: Prisma.TransactionClient, input: TripInput, userId: string, tripId: string | null) {
   const ids = [...new Set(input.poolCardTypeIds)];
-  const cards = await tx.cardType.findMany({ where: { id: { in: ids }, isActive: true }, include: { pack: { select: { id: true, name: true, isPremium: true } } } });
+  const cards = await tx.cardType.findMany({ where: { id: { in: ids }, isActive: true }, include: { packs: { include: { pack: { select: { name: true } } } } } });
   if (cards.length !== ids.length) throw new ActionError("Alguna carta ya no está disponible. Revisa la selección.");
   const locked = lockedPackNamesInPool(cards, await getUnlockedPackIds(userId, tripId));
   if (locked.length) throw new ActionError(`El pack ${locked.join(", ")} no está desbloqueado para este viaje.`);
+  if (input.packId && !await tx.cardPack.findFirst({ where: { id: input.packId, isActive: true }, select: { id: true } })) throw new ActionError("Ese pack ya no está disponible.");
   const rules = input.dealByCategory ? Object.entries(input.dealRules ?? {}).map(([category, cardsPerPlayer]) => ({ category, cardsPerPlayer })) : [];
   const config = dealConfigOf(input, rules);
   const message = validateDealConfig(cards.map(c => ({ cardTypeId: c.id, category: c.category, rarity: c.rarity })), config, input.playerNames.length);
   if (message) throw new ActionError(message);
-  const settings = { legendariesPerPlayer: input.legendariesPerPlayer, raresPerPlayer: input.raresPerPlayer, commonsPerPlayer: input.commonsPerPlayer, dealByCategory: input.dealByCategory };
+  const settings = { legendariesPerPlayer: input.legendariesPerPlayer, raresPerPlayer: input.raresPerPlayer, commonsPerPlayer: input.commonsPerPlayer, dealByCategory: input.dealByCategory, packId: input.packId ?? null };
   return { pool: ids.map(cardTypeId => ({ cardTypeId })), rules, settings };
 }
 export async function createTrip(_previous: ActionState, form: FormData): Promise<ActionState> {

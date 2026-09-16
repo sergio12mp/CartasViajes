@@ -7,7 +7,7 @@ export function enforce(result: RuleResult) { if (!result.ok) throw new ActionEr
 export function requireOne(count: number, message: string) { if (count !== 1) throw new ActionError(message); }
 export const tripInclude = {
   players: { include: { user: { select: { image: true } } }, orderBy: { displayName: "asc" as const } },
-  pool: { include: { cardType: true } }, dealRules: true,
+  pool: { include: { cardType: true } }, dealRules: true, pack: { select: { id: true, name: true, emoji: true } },
 } satisfies Prisma.TripInclude;
 // All mutations lock the trip first, so start/finish/claim/play share one ordering.
 // PostgreSQL holds this row lock only until the transaction commits or rolls back.

@@ -11,6 +11,7 @@ export const tripSchema = z.object({
   commonsPerPlayer: count(100, "comunes"),
   dealByCategory: checkbox,
   dealRules: z.record(z.string().min(1).max(60), z.number().int().min(0).max(100, "Máximo 100 cartas por categoría.")).nullable().optional(),
+  packId: z.preprocess(v => (v == null || v === "" ? null : v), z.string().regex(/^[a-z0-9-]{2,60}$/, "Pack no válido.").nullable()),
   playerNames: z.array(name).min(2, "Añade al menos 2 participantes.").max(30, "El máximo es de 30 participantes.")
     .refine(names => new Set(names.map(n => n.toLocaleLowerCase("es"))).size === names.length, "Los nombres de los participantes no pueden repetirse."),
 }).superRefine((trip, ctx) => {
@@ -25,7 +26,7 @@ export function parseTripForm(form: FormData) {
   return tripSchema.safeParse({
     name: form.get("name"), responseWindowMinutes: form.get("responseWindowMinutes"), poolCardTypeIds: form.getAll("poolCardTypeIds[]"), playerNames: form.getAll("playerNames[]"),
     legendariesPerPlayer: form.get("legendariesPerPlayer") ?? 1, raresPerPlayer: form.get("raresPerPlayer") ?? 0, commonsPerPlayer: form.get("commonsPerPlayer") ?? 0,
-    dealByCategory: form.get("dealByCategory") ?? false, dealRules,
+    dealByCategory: form.get("dealByCategory") ?? false, dealRules, packId: form.get("packId"),
   });
 }
 export const idSchema = z.string().min(1, "Falta un identificador.").max(100, "Identificador no válido.");
@@ -40,7 +41,7 @@ export const cardTypeSchema = z.object({
   emoji: z.preprocess(v => (v == null || (typeof v === "string" && v.trim() === "") ? null : v), z.string().trim().max(8, "El emoji es demasiado largo.").nullable()),
   isActive: checkbox,
   sortOrder: z.coerce.number().int("Usa un orden entero.").min(0).max(10_000),
-  packId: z.preprocess(v => (v == null || v === "" ? null : v), idSchema.nullable()),
+  packIds: z.array(z.string().regex(/^[a-z0-9-]{2,60}$/)).max(50).default([]),
   creditName: z.preprocess(v => (v == null || (typeof v === "string" && v.trim() === "") ? null : v), z.string().trim().max(40, "El crédito admite hasta 40 caracteres.").nullable()),
   suggestionId: z.preprocess(v => (v == null || v === "" ? null : v), idSchema.nullable()),
 }).superRefine((card, ctx) => {
@@ -72,6 +73,10 @@ export const packSchema = z.object({
   priceLifetimeCents: euros("para siempre"),
   isActive: checkbox,
   sortOrder: z.coerce.number().int("Usa un orden entero.").min(0).max(10_000),
+  legendariesPerPlayer: count(10, "legendarias"),
+  raresPerPlayer: count(100, "raras"),
+  commonsPerPlayer: count(100, "comunes"),
+  responseWindowMinutes: z.coerce.number().int("Usa minutos enteros.").min(1, "La ventana mínima es de 1 minuto.").max(120, "La ventana máxima es de 120 minutos."),
 }).superRefine((pack, ctx) => {
   if (pack.isPremium && pack.priceTripCents === 0 && pack.priceLifetimeCents === 0) ctx.addIssue({ code: "custom", path: ["priceLifetimeCents"], message: "Un pack premium necesita al menos un precio." });
 });

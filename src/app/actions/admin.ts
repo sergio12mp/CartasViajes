@@ -15,15 +15,17 @@ function refreshAdmin() {
 }
 export async function upsertCardType(_previous: ActionState, form: FormData): Promise<ActionState> {
   await requireAdmin();
-  const parsed = cardTypeSchema.safeParse({ ...Object.fromEntries(form), isActive: form.get("isActive") ?? false });
+  const parsed = cardTypeSchema.safeParse({ ...Object.fromEntries(form), isActive: form.get("isActive") ?? false, packIds: form.getAll("packIds[]") });
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
-  const { id, suggestionId, ...data } = parsed.data;
+  const { id, suggestionId, packIds, ...data } = parsed.data;
   const creating = form.get("mode") === "create";
   return actionResult(async () => {
     if (creating && await prisma.cardType.findUnique({ where: { id }, select: { id: true } })) throw new ActionError("Ya existe una carta con ese identificador.");
-    if (data.packId && !await prisma.cardPack.findUnique({ where: { id: data.packId }, select: { id: true } })) throw new ActionError("Ese pack no existe.");
+    if (packIds.length && await prisma.cardPack.count({ where: { id: { in: packIds } } }) !== packIds.length) throw new ActionError("Alguno de los packs no existe.");
     await prisma.$transaction(async tx => {
       await tx.cardType.upsert({ where: { id }, create: { id, ...data, suggestionId }, update: { ...data, ...(suggestionId ? { suggestionId } : {}) } });
+      await tx.cardPackCard.deleteMany({ where: { cardTypeId: id, packId: { notIn: packIds } } });
+      await tx.cardPackCard.createMany({ data: packIds.map(packId => ({ packId, cardTypeId: id, sortOrder: data.sortOrder })), skipDuplicates: true });
       if (suggestionId) await tx.cardSuggestion.updateMany({ where: { id: suggestionId }, data: { status: "REVIEWED" } });
     });
     refreshAdmin();

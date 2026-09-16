@@ -160,8 +160,24 @@ model CardPack {
   priceLifetimeCents Int            @default(0)
   isActive           Boolean        @default(true)
   sortOrder          Int            @default(0)
-  cards              CardType[]
+  legendariesPerPlayer Int          @default(1)
+  raresPerPlayer     Int            @default(2)
+  commonsPerPlayer   Int            @default(2)
+  responseWindowMinutes Int         @default(10)
+  cards              CardPackCard[]
   purchases          PackPurchase[]
+  trips              Trip[]
+}
+
+model CardPackCard {
+  packId     String
+  cardTypeId String
+  sortOrder  Int      @default(0)
+  pack       CardPack @relation(fields: [packId], references: [id], onDelete: Cascade)
+  cardType   CardType @relation(fields: [cardTypeId], references: [id], onDelete: Cascade)
+
+  @@id([packId, cardTypeId])
+  @@index([cardTypeId])
 }
 
 model CardType {
@@ -176,10 +192,9 @@ model CardType {
   color          String?
   isActive       Boolean         @default(true)
   sortOrder      Int             @default(0)
-  packId         String?
   creditName     String?
   suggestionId   String?         @unique
-  pack           CardPack?       @relation(fields: [packId], references: [id])
+  packs          CardPackCard[]
   suggestion     CardSuggestion? @relation(fields: [suggestionId], references: [id])
   pools          TripPoolCard[]
   cards          PlayerCard[]
@@ -229,6 +244,8 @@ model Trip {
   raresPerPlayer        Int            @default(0)
   commonsPerPlayer      Int            @default(0)
   dealByCategory        Boolean        @default(true)
+  packId                String?
+  pack                  CardPack?      @relation(fields: [packId], references: [id], onDelete: SetNull)
   creatorId             String
   creator               User           @relation(fields: [creatorId], references: [id])
   createdAt             DateTime       @default(now())

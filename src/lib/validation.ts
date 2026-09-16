@@ -59,6 +59,7 @@ export const suggestionSchema = z.object({
   name: z.string().trim().min(2, "El nombre necesita al menos 2 caracteres.").max(60, "El nombre admite hasta 60 caracteres."),
   description: z.string().trim().min(5, "Describe la carta con al menos 5 caracteres.").max(500, "La descripción admite hasta 500 caracteres."),
   category: z.string().trim().min(2, "Indica una categoría.").max(60, "La categoría admite hasta 60 caracteres."),
+  rarity: z.enum(["COMMON", "RARE", "LEGENDARY"], { message: "Elige una rareza para la carta." }),
   comment: z.string().trim().max(500, "El comentario admite hasta 500 caracteres."),
   creditName: z.string().trim().max(40, "El nombre para el crédito admite hasta 40 caracteres."),
 });

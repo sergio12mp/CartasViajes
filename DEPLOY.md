@@ -46,6 +46,8 @@ Usa un secreto distinto en producción. `AUTH_URL` es opcional; si lo configuras
 
 ## 3. Vercel
 
+La actualización de sugerencias añade `CardSuggestion.rarity` como campo opcional para conservar las propuestas antiguas. Antes de publicar este código, ejecuta `npx prisma db push` contra la base correspondiente al despliegue. Las propuestas nuevas exigen rareza; las anteriores muestran «Sin rareza propuesta». No se necesita volver a ejecutar el seed.
+
 1. Publica los commits cuando estén revisados. Importa `sergio12mp/CartasViajes` en [Vercel](https://vercel.com/new).
 2. Framework: **Next.js**. **Root Directory: raíz del repositorio (`./`)**. Node.js: **24.x**.
 3. Build command: `npm run build`. Install command: `npm ci`.

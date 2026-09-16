@@ -1,6 +1,16 @@
 import { expect, it } from "vitest";
-import { cardTypeSchema, parseTripForm, tripSchema } from "./validation";
+import { cardTypeSchema, parseTripForm, suggestionSchema, tripSchema } from "./validation";
 const input = { name: "Viaje", responseWindowMinutes: 10, poolCardTypeIds: ["a"], legendariesPerPlayer: 1, raresPerPlayer: 2, commonsPerPlayer: 2, dealByCategory: false, dealRules: null, playerNames: [" Ana ", "Luis"] };
+const suggestion = { name: "Karaoke", description: "Canta una canción", category: "musica", comment: "", creditName: "" };
+it.each(["COMMON", "RARE", "LEGENDARY"])("preserves the proposed %s rarity", rarity => {
+  expect(suggestionSchema.parse({ ...suggestion, rarity }).rarity).toBe(rarity);
+});
+it.each([undefined, null, "", "MYTHIC", "rara"])("rejects missing or invalid suggestion rarity: %s", rarity => {
+  expect(suggestionSchema.safeParse({ ...suggestion, rarity }).success).toBe(false);
+});
+it("keeps custom categories and trims their surrounding whitespace", () => {
+  expect(suggestionSchema.parse({ ...suggestion, rarity: "RARE", category: "  Naturaleza y montaña  " }).category).toBe("Naturaleza y montaña");
+});
 it("trims names and rejects case-insensitive duplicates", () => {
   expect(tripSchema.parse(input).playerNames).toEqual(["Ana", "Luis"]);
   expect(tripSchema.safeParse({ ...input, playerNames: [" Ana ", "ana"] }).success).toBe(false);

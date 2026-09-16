@@ -20,7 +20,7 @@
   body { @apply bg-bg text-ink font-sans; }
   button, a, input, select { -webkit-tap-highlight-color: transparent; }
   button { @apply cursor-pointer disabled:cursor-not-allowed disabled:opacity-50; }
-  input:not([type=checkbox]), select { @apply w-full rounded-xl border border-border bg-surface px-3 py-3; }
+  input:not([type=checkbox]):not([type=radio]), select { @apply w-full rounded-xl border border-border bg-surface px-3 py-3; }
   input[type=checkbox] { @apply h-5 w-5 accent-primary; }
   :focus-visible { @apply outline-2 outline-offset-4 outline-primary; }
   h1 { @apply text-3xl font-bold tracking-tight; }

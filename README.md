@@ -34,7 +34,7 @@ Las cartas se agrupan en packs (`/admin/packs`). **Mientras `PAYMENTS_ENABLED` n
 ### Comunidad, sugerencias y administración
 
 - `/comunidad` muestra TikToks aprobados de gente jugando y las cartas creadas por la comunidad; cualquier usuario puede enviar un enlace, opcionalmente asociado a un viaje y un destino.
-- `/sugerencias` recoge propuestas de cartas nuevas con el nombre que quiera cada persona para el crédito; el admin puede convertirlas en carta y aparece «Propuesta por X».
+- `/sugerencias` recoge propuestas con categorías presentadas con iconos y nombres legibles, opción de categoría nueva y rareza obligatoria (Común, Rara o Legendaria). La rareza se muestra al usuario y al administrador y se precarga al convertir la propuesta en carta, donde sigue siendo editable. Las propuestas antiguas conservan la rareza sin especificar. El nombre elegido para el crédito aparece como «Propuesta por X».
 - `/admin` (solo para los correos de `ADMIN_EMAILS`) permite crear, editar y retirar cartas y packs, ver compras, aprobar vídeos, leer valoraciones y sugerencias, y seguir las métricas: K-factor (invitados que crean un viaje en 60 días), activación (viajes que se juegan con ≥ 3 a bordo), profundidad (cartas por jugador) y compartición (resúmenes compartidos).
 
 La ventana de respuesta es de 1 a 120 minutos. Al llegar al vencimiento, el ataque se considera aceptado. El servidor materializa las expiraciones al cargar el viaje o el historial, o al ejecutar una acción de juego. Las páginas se actualizan cada 5 segundos mientras están visibles. Sin visitas no se ejecuta ningún temporizador de servidor.

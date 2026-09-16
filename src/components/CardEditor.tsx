@@ -6,7 +6,7 @@ import { slugify } from "@/lib/slug";
 import { rarityLabels, type RarityKey } from "@/lib/game/rarity";
 import { StateForm } from "./StateForm";
 const textarea = "w-full rounded-xl border border-border bg-surface px-3 py-3";
-export type CardDraft = { name?: string; description?: string; category?: string; creditName?: string | null; suggestionId?: string | null };
+export type CardDraft = { name?: string; description?: string; category?: string; rarity?: RarityKey | null; creditName?: string | null; suggestionId?: string | null };
 export function CardEditor({ card, categories, packs, packIds = [], draft }: { card?: CardType; categories: string[]; packs: CardPack[]; packIds?: string[]; draft?: CardDraft }) {
   const [kind, setKind] = useState<"ATTACK" | "REACTION">(card?.kind ?? "ATTACK");
   const [id, setId] = useState(card?.id ?? slugify(draft?.name ?? ""));
@@ -22,7 +22,7 @@ export function CardEditor({ card, categories, packs, packIds = [], draft }: { c
     <div className="grid gap-4 sm:grid-cols-3">
       <label className="block space-y-2"><span>Tipo</span><select name="kind" value={kind} onChange={e => setKind(e.target.value as "ATTACK" | "REACTION")}><option value="ATTACK">Ataque</option><option value="REACTION">Reacción</option></select></label>
       <label className="block space-y-2"><span>Efecto de reacción</span><select name="reactionEffect" defaultValue={card?.reactionEffect ?? ""} disabled={kind !== "REACTION"}><option value="">Ninguno</option><option value="BLOCK">Bloquear</option><option value="REFLECT">Devolver</option></select></label>
-      <label className="block space-y-2"><span>Rareza</span><select name="rarity" defaultValue={card?.rarity ?? "COMMON"}>{(Object.keys(rarityLabels) as RarityKey[]).map(r => <option key={r} value={r}>{rarityLabels[r]}</option>)}</select></label>
+      <label className="block space-y-2"><span>Rareza</span><select name="rarity" defaultValue={card?.rarity ?? draft?.rarity ?? "COMMON"}>{(Object.keys(rarityLabels) as RarityKey[]).map(r => <option key={r} value={r}>{rarityLabels[r]}</option>)}</select></label>
     </div>
     <div className="grid gap-4 sm:grid-cols-3">
       <label className="block space-y-2"><span>Categoría</span><input name="category" required list="card-categories" pattern="[a-zA-Z0-9-]{2,60}" defaultValue={card?.category ?? draft?.category} placeholder="reto" /><datalist id="card-categories">{categories.map(c => <option key={c} value={c} />)}</datalist></label>

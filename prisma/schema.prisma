@@ -284,6 +284,7 @@ model CardSuggestion {
   name        String
   description String
   category    String
+  rarity      Rarity?
   comment     String?
   creditName  String?
   status      SuggestionStatus @default(NEW)

@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { prisma } from "@/lib/db";
-import { Badge, colors, Footer, Frame, OG_SIZE, rarityColor, rarityLabel } from "@/lib/og";
+import { Badge, brandAsset, colors, Footer, Frame, OG_SIZE, rarityColor, rarityLabel } from "@/lib/og";
 export const dynamic = "force-dynamic";
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -8,6 +8,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const card = await prisma.cardType.findUnique({ where: { id }, include: { packs: { include: { pack: { select: { name: true } } }, orderBy: { pack: { sortOrder: "asc" } }, take: 1 } } });
   if (!card) return new Response("Not found", { status: 404 });
   const color = rarityColor[card.rarity];
+  const [mark, wordmark] = await Promise.all([brandAsset("mark.png"), brandAsset("wordmark.png")]);
   return new ImageResponse(
     <Frame style={{ padding: 60 }}>
       <div style={{ display: "flex", flexDirection: "column", flex: 1, borderRadius: 48, border: `18px solid ${color}`, background: colors.surface, padding: 64, ...(card.rarity === "LEGENDARY" ? { boxShadow: `0 0 0 14px ${color}44` } : {}) }}>
@@ -17,7 +18,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         <div style={{ display: "flex", fontSize: 76, fontWeight: 800, lineHeight: 1.05, marginTop: 12 }}>{card.name}</div>
         <div style={{ display: "flex", fontSize: 40, lineHeight: 1.35, marginTop: 28, color: colors.ink }}>{card.description}</div>
         {card.creditName && <div style={{ display: "flex", fontSize: 30, marginTop: 28, color: colors.soft }}>Propuesta por {card.creditName}</div>}
-        <Footer text="tripu · el viaje se pone en juego" />
+        <Footer text="el viaje se pone en juego" mark={mark} wordmark={wordmark} />
       </div>
     </Frame>,
     { ...OG_SIZE, headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" } },

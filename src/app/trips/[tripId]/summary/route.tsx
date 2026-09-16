@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { requireUser } from "@/lib/session";
 import { getTripForUser, getTripHistory } from "@/lib/trips";
-import { Badge, colors, Footer, Frame, OG_SIZE } from "@/lib/og";
+import { Badge, brandAsset, colors, Footer, Frame, OG_SIZE } from "@/lib/og";
 export const dynamic = "force-dynamic";
 const dateFormat = new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" });
 export async function GET(_request: Request, { params }: { params: Promise<{ tripId: string }> }) {
@@ -18,6 +18,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tri
   const [topCard] = count(p => p.card.cardType.id);
   const topCardType = topCard ? plays.find(p => p.card.cardType.id === topCard[0])?.card.cardType : null;
   const medals = ["🥇", "🥈", "🥉"];
+  const [mark, wordmark] = await Promise.all([brandAsset("mark.png"), brandAsset("wordmark.png")]);
   return new ImageResponse(
     <Frame>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><Badge>Viaje finalizado</Badge><span style={{ fontSize: 28, color: colors.soft }}>{trip.startedAt ? dateFormat.format(trip.startedAt) : ""}</span></div>
@@ -32,7 +33,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tri
         <div style={{ display: "flex", flexDirection: "column", flex: 1, background: colors.surface, borderRadius: 40, border: `4px solid ${colors.border}`, padding: 36 }}><span style={{ fontSize: 26, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", color: colors.soft }}>MVP del viaje</span><span style={{ fontSize: 44, fontWeight: 800, marginTop: 12 }}>{mvp ? name(mvp[0]) : "—"}</span><span style={{ fontSize: 28, color: colors.soft }}>{mvp ? `${mvp[1]} cartas lanzadas` : "sin jugadas"}</span></div>
         <div style={{ display: "flex", flexDirection: "column", flex: 1, background: colors.surface, borderRadius: 40, border: `4px solid ${colors.accent}`, padding: 36 }}><span style={{ fontSize: 26, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", color: colors.soft }}>Carta del viaje</span><span style={{ fontSize: 44, fontWeight: 800, marginTop: 12 }}>{topCardType ? `${topCardType.emoji ?? ""} ${topCardType.name}` : "—"}</span><span style={{ fontSize: 28, color: colors.soft }}>{topCard ? `jugada ${topCard[1]} veces` : ""}</span></div>
       </div>
-      <Footer text="tripu · el viaje se pone en juego" />
+      <Footer text="el viaje se pone en juego" mark={mark} wordmark={wordmark} />
     </Frame>,
     { ...OG_SIZE, headers: { "Cache-Control": "private, no-store" } },
   );

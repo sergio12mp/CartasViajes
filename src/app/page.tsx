@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { auth, signIn } from "@/auth";
 import { getTripsForUser } from "@/lib/trips";
 import { TripCard } from "@/components/TripCard";
@@ -9,7 +10,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
   const { error } = await searchParams;
   if (!session?.user?.id) return <div className="space-y-8 py-5 sm:py-10">
     {error && <p role="alert" className="panel text-sm text-danger">No se pudo iniciar sesión. Comprueba el acceso de tu cuenta e inténtalo de nuevo.</p>}
-    <section className="space-y-6"><p className="text-xs font-bold uppercase tracking-[0.25em] text-primary">Amigos · Viajes · Cartas</p><h1 className="max-w-xl text-5xl leading-[1.05] sm:text-6xl">El viaje se pone<br /><span className="text-primary">en juego.</span></h1>
+    <section className="space-y-6"><Image src="/brand/logo.png" alt="Tripu" width={220} height={301} priority className="h-auto w-40 sm:w-52" /><p className="text-xs font-bold uppercase tracking-[0.25em] text-primary">Amigos · Viajes · Cartas</p><h1 className="max-w-xl text-5xl leading-[1.05] sm:text-6xl">El viaje se pone<br /><span className="text-primary">en juego.</span></h1>
       <p className="max-w-lg text-lg leading-relaxed text-ink-soft">Reúne a tu gente. Reparte las cartas.<br />Lanza un reto, prepara tu escudo y deja que el viaje haga el resto.</p>
       <form action={async () => { "use server"; await signIn("google"); }}><button className="btn">Entrar con Google →</button></form>
     </section>
